@@ -1,35 +1,66 @@
-#from django.shortcuts import render, redirect
-#from .forms import CustomUserCreationForm
-from rest_framework import status
+from django.db.models import Q
+from rest_framework import status, permissions
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
-#from django.contrib.auth.models import User
-from django.contrib.auth import get_user_model
-User = get_user_model()
+from rest_framework import generics
+
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from .models import CustomUser
+from .serializers import RegisterSerializer
+
+# Register endpoint
+class RegisterView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = RegisterSerializer
 
 
+# Login endpoint (custom)
+@api_view(['POST'])
+def login_view(request):
+    """
+    Accepts: { "identifier": "...", "password": "..." }
+    identifier can be phone OR email OR username
+    Response: { access, refresh, role }
+    """
+    identifier = request.data.get('identifier') or request.data.get('username') or request.data.get('email')
+    password = request.data.get('password')
 
-#def register_view(request):
- #   if request.method == 'POST':
- #       form = CustomUserCreationForm(request.POST)
-  #      if form.is_valid():
-   #         user = form.save()
-    #        login(request, user)
-     #       return redirect('product_list')
-   # else:
-    #    form = CustomUserCreationForm()
-    #return render(request, 'accounts/register.html', {'form': form})
-class RegisterView(APIView):
-    def post(self, request):
-        username = request.data.get('username')
-        email = request.data.get('email')
-        password = request.data.get('password')
+    if not identifier or not password:
+        return Response({"detail": "identifier and password required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        if not username or not password:
-            return Response({'error': 'Username and password required'}, status=400)
+    try:
+        # try to find user by phone or email or username
+        user = CustomUser.objects.filter(
+            Q(phone=identifier) | Q(email=identifier) | Q(username=identifier)
+        ).first()
+    except Exception:
+        user = None
 
-        if User.objects.filter(username=username).exists():
-            return Response({'error': 'Username already exists'}, status=400)
+    if user is None:
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
 
-        user = User.objects.create_user(username=username, email=email, password=password)
-        return Response({'message': 'User created successfully!'}, status=201)
+    if not user.check_password(password):
+        return Response({"detail": "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    refresh = RefreshToken.for_user(user)
+    return Response({
+        "refresh": str(refresh),
+        "access": str(refresh.access_token),
+        "role": user.role
+    })
+
+
+# Protected userinfo (to check role)
+class UserInfoView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        return Response({
+            "username": user.username,
+            "email": user.email,
+            "phone": user.phone,
+            "role": user.role
+        })

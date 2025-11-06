@@ -46,7 +46,11 @@
             />
           </UFormField>
 
-          <UButton type="submit" class="w-1/2 mt-2 justify-center"
+          <UButton
+            :loading="pending"
+            :disabled="pending"
+            type="submit"
+            class="w-1/2 mt-2 justify-center"
             >ورود</UButton
           >
         </form>
@@ -57,9 +61,52 @@
 
 <script setup>
 import { useAppToast } from "~/composables/useToast";
-const succes = ref(false);
+import { useRouter } from "vue-router";
+
+const router = useRouter();
+const Toast = useAppToast();
+
 const number = ref("");
 const password = ref("");
 const pending = ref(false);
-const Toast = useAppToast();
+
+const handlelogin = async () => {
+  pending.value = true;
+  try {
+    // ارسال درخواست به Django backend
+    const res = await $fetch("http://127.0.0.1:8000/api/accounts/login/", {
+      method: "POST",
+      body: {
+        identifier: number.value, // شماره یا ایمیل یا username
+        password: password.value,
+      },
+    });
+
+    // ذخیره توکن‌ها
+    localStorage.setItem("access", res.access);
+    localStorage.setItem("refresh", res.refresh);
+
+    // پیام موفقیت
+    Toast.toastSuccess({
+      title: "ورود با موفقیت انجام شد",
+      description: "خوش آمدید!",
+    });
+
+    // هدایت بر اساس نقش کاربر
+    if (res.role === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/");
+    }
+  } catch (err) {
+    Toast.toastError({
+      title: "ورود ناموفق بود",
+      description:
+        err?.data?.detail ||
+        "رمز عبور یا شماره تلفن اشتباه است. دوباره امتحان کنید.",
+    });
+  } finally {
+    pending.value = false;
+  }
+};
 </script>

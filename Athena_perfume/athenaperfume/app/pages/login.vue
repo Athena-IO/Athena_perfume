@@ -13,27 +13,27 @@
 
     <!-- کارت ورود -->
     <div class="w-full md:w-1/3 p-6">
-      <Ucard class="w-full">
+      <UCard class="w-full">
         <template #header>صفحه ورود</template>
-        <form @submit.prevent="handlelogin">
+        <form @submit.prevent="handleLogin">
           <UFormField
-            label="نام کاربری"
-            name="userName"
+            label="شناسه ورود"
+            name="identifier"
             class="mb-4"
             :required="true"
-            help="نام کاربری خود را وارد کنید"
+            help="شماره تلفن، ایمیل یا نام کاربری"
           >
             <UInput
               type="text"
-              placeholder="شماره تلفن"
+              placeholder="مثال: 09123456789"
               required
-              v-model="number"
+              v-model="identifier"
             />
           </UFormField>
 
           <UFormField
             label="رمز عبور"
-            name="Password"
+            name="password"
             class="mb-4"
             :required="true"
             help="رمز عبور خود را وارد کنید"
@@ -51,10 +51,11 @@
             :disabled="pending"
             type="submit"
             class="w-1/2 mt-2 justify-center"
-            >ورود</UButton
           >
+            ورود
+          </UButton>
         </form>
-      </Ucard>
+      </UCard>
     </div>
   </div>
 </template>
@@ -64,46 +65,45 @@ import { useAppToast } from "~/composables/useToast";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
-const Toast = useAppToast();
+const toast = useAppToast();
 
-const number = ref("");
+const identifier = ref("");
 const password = ref("");
 const pending = ref(false);
 
-const handlelogin = async () => {
+// کوکی‌ها با زمان انقضا
+const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 }); // 1 روز
+const refreshCookie = useCookie("refresh", { maxAge: 60 * 60 * 24 * 7 }); // 7 روز
+const isAdminCookie = useCookie("isAdmin", { maxAge: 60 * 60 * 24 }); // 1 روز
+
+const handleLogin = async () => {
   pending.value = true;
   try {
-    // ارسال درخواست به Django backend
     const res = await $fetch("http://127.0.0.1:8000/api/accounts/login/", {
       method: "POST",
       body: {
-        identifier: number.value, // شماره یا ایمیل یا username
+        identifier: identifier.value,
         password: password.value,
       },
     });
 
-    // ذخیره توکن‌ها
-    localStorage.setItem("access", res.access);
-    localStorage.setItem("refresh", res.refresh);
+    // ذخیره توکن‌ها در کوکی
+    accessCookie.value = res.access;
+    refreshCookie.value = res.refresh;
+    isAdminCookie.value = res.role === "admin" ? "true" : "false";
 
     // پیام موفقیت
-    Toast.toastSuccess({
-      title: "ورود با موفقیت انجام شد",
+    toast.toastSuccess({
+      title: "ورود موفق",
       description: "خوش آمدید!",
     });
 
-    // هدایت بر اساس نقش کاربر
-    if (res.role === "admin") {
-      router.push("/admin");
-    } else {
-      router.push("/");
-    }
+    // هدایت بر اساس نقش
+    router.push(res.role === "admin" ? "/admin" : "/");
   } catch (err) {
-    Toast.toastError({
-      title: "ورود ناموفق بود",
-      description:
-        err?.data?.detail ||
-        "رمز عبور یا شماره تلفن اشتباه است. دوباره امتحان کنید.",
+    toast.toastError({
+      title: "ورود ناموفق",
+      description: err?.data?.detail || "اطلاعات ورود اشتباه است.",
     });
   } finally {
     pending.value = false;

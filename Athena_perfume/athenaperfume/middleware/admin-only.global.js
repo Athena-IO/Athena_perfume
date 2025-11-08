@@ -1,11 +1,11 @@
-// middleware/admin-only.js
+// middleware/admin-only.global.js
 export default defineNuxtRouteMiddleware((to, from) => {
   if (process.server) return;
 
-  const accessToken = useCookie("access").value;
+  const access = useCookie("access").value;
   const isAdmin = useCookie("isAdmin").value === "true";
 
-  if (!accessToken) {
+  if (!access) {
     return navigateTo("/login");
   }
 

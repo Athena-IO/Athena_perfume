@@ -8,6 +8,7 @@ export default defineNuxtConfig({
   colorMode: {
     preference: "light", // default value of $colorMode.preference
   },
+
   css: ["~/assets/css/main.css"],
   vite: { plugins: [tailwindcss()] },
 });

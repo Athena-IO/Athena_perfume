@@ -1,6 +1,7 @@
-// middleware/admin-only.global.js
+// middleware/admin-only.js
 export default defineNuxtRouteMiddleware((to, from) => {
-  if (process.server) return;
+  // فقط در کلاینت اجرا بشه
+  if (import.meta.server) return;
 
   const access = useCookie("access").value;
   const isAdmin = useCookie("isAdmin").value === "true";

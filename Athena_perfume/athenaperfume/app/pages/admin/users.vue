@@ -27,7 +27,7 @@
     </UCard>
 
     <!-- مودال حذف -->
-    <UModal v-model="showModal">
+    <UModal v-model="showModal" v-if="showModal">
       <UCard>
         <template #header>
           <h3 class="font-semibold">حذف ادمین</h3>

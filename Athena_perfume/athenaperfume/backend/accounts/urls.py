@@ -8,3 +8,22 @@ urlpatterns = [
     path('userinfo/', UserInfoView.as_view(), name='userinfo'),
     path('logout/', logout_view, name='logout'),  # جدید
 ]
+from django.urls import path
+from .views import login_view, refresh_view, logout_view, UserInfoView, LoginLogListView
+
+urlpatterns = [
+    path('login/', login_view, name='login'),
+    path('refresh/', refresh_view, name='refresh'),
+    path('logout/', logout_view, name='logout'),
+    path('me/', UserInfoView.as_view(), name='user_info'),
+
+    # مشاهده لاگ‌های ورود
+    path('login-logs/', LoginLogListView.as_view(), name='login_logs'),
+]
+
+from django.urls import path, include
+
+urlpatterns = [
+    # ... الگوهای موجود شما
+    path('accounts/', include('django.contrib.auth.urls')),
+]

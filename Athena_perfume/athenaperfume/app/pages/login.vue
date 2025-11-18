@@ -61,49 +61,53 @@
 </template>
 
 <script setup>
-import { useAppToast } from "~/composables/useToast";
-import { useRouter } from "vue-router";
-
-const router = useRouter();
-const toast = useAppToast();
-
 const identifier = ref("");
 const password = ref("");
 const pending = ref(false);
 
-// کوکی‌ها با زمان انقضا
-const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 }); // 1 روز
-const refreshCookie = useCookie("refresh", { maxAge: 60 * 60 * 24 * 7 }); // 7 روز
-const isAdminCookie = useCookie("isAdmin", { maxAge: 60 * 60 * 24 }); // 1 روز
+const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 });
+const isAdminCookie = useCookie("isAdmin", { maxAge: 60 * 60 * 24 });
 
 const handleLogin = async () => {
   pending.value = true;
   try {
-    const res = await $fetch("http://127.0.0.1:8000/api/accounts/login/", {
+    // آدرس دقیقاً همونی که سرور Django روش اجرا شده
+    const res = await $fetch("/api/accounts/login/", {
       method: "POST",
       body: {
         identifier: identifier.value,
         password: password.value,
       },
+      credentials: "include", // برای httpOnly cookie
     });
 
-    // ذخیره توکن‌ها در کوکی
     accessCookie.value = res.access;
-    refreshCookie.value = res.refresh;
     isAdminCookie.value = res.role === "admin" ? "true" : "false";
 
-    // پیام موفقیت
-    toast.toastSuccess({
+    useAppToast().toastSuccess({
       title: "ورود موفق",
       description: "خوش آمدید!",
     });
-
-    // هدایت بر اساس نقش
-    router.push(res.role === "admin" ? "/admin" : "/");
+    useRouter().push(res.role === "admin" ? "/admin" : "/");
   } catch (err) {
-    toast.toastError({
+    console.error("خطای ورود:", err);
+
+    let message = "مشکلی پیش اومد، دوباره تلاش کن";
+
+    // ارورهای رایج و متن فارسی قشنگ
+    if (err?.status === 401 || err?.status === 400) {
+      message = err?.data?.detail || "شناسه یا رمز عبور اشتباهه";
+    } else if (err?.status === 404) {
+      message = "آدرس سرور پیدا نشد. بک‌اند رو اجرا کردی؟";
+    } else if (err?.status >= 500) {
+      message = "سرور مشکل داره، یه کم دیگه امتحان کن";
+    } else if (!navigator.onLine) {
+      message = "اینترنتت وصل نیست";
+    }
+
+    useAppToast().toastError({
       title: "ورود ناموفق",
-      description: err?.data?.detail || "اطلاعات ورود اشتباه است.",
+      description: message,
     });
   } finally {
     pending.value = false;

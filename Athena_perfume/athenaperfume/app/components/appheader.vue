@@ -28,20 +28,20 @@ import type { NavigationMenuItem } from "@nuxt/ui";
 
 const items = computed<NavigationMenuItem[]>(() => [
   {
-    label: "Docs",
+    label: "تخفیف ها",
     to: "/docs/getting-started",
   },
   {
-    label: "Components",
+    label: "عطر مردانه",
     to: "/docs/components",
   },
   {
-    label: "Figma",
+    label: "عطر زنانه",
     to: "https://go.nuxt.com/figma-ui",
     target: "_blank",
   },
   {
-    label: "Releases",
+    label: "فروشگاه عطر",
     to: "https://github.com/nuxt/ui/releases",
     target: "_blank",
   },

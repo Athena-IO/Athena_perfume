@@ -3,6 +3,14 @@ from django.core.exceptions import ValidationError
 import re
 
 from .models import CustomUser
+from rest_framework import serializers
+from .models import CustomUser, LoginLog
+
+
+class LoginLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoginLog
+        fields = '__all__'
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:

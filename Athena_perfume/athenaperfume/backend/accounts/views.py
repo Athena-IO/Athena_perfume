@@ -15,7 +15,7 @@ from .serializers import RegisterSerializer
 class RegisterView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = RegisterSerializer
-    permission_classes = [permissions.IsAdminUser]  # فقط ادمین!
+    permission_classes = [permissions.AllowAny]  # فقط ادمین!
 
     def perform_create(self, serializer):
         # فقط ادمین می‌تونه role='admin' بسازه

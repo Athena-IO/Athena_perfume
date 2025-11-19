@@ -11,4 +11,10 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
   vite: { plugins: [tailwindcss()] },
+  routeRules: {
+    // همه درخواست‌های /api/** رو به Django پروکسی کن
+    "/api/**": {
+      proxy: "http://127.0.0.1:8000/api/**",
+    },
+  },
 });

@@ -1,5 +1,13 @@
 <template>
   <div class="w-full px-4 sm:px-6 lg:px-8">
+        <div class="px-6 py-8">
+      <BannerCarousel 
+        :banners="banners" 
+        height="medium"
+        :autoplay="true"
+        :autoplay-delay="7000"
+      />
+    </div>
     <div class="grid lg:grid-cols-2 grid-cols-1 items-center min-h-[70vh]">
       <div class="pl-25">
         <img
@@ -98,7 +106,7 @@
       </ULink>
     </div>
   </div>
-  <div>
+  <div class="overflow-hidden">
     <div class="flex items-center justify-between p-6">
       <!-- Show all button on the left -->
       <div>
@@ -152,27 +160,142 @@
     </div>
 
     <!-- Carousel for products -->
-    <UCarousel
-      v-slot="{ item }"
-      :items="products"
-      :ui="{ item: 'basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4' }"
-      loop
-      arrows
-      dots
-      class="p-6"
-    >
-      <ProductCard :product="item" />
-    </UCarousel>
-  </div>
+    <div class="w-full px-16 sm:px-20 pb-12 relative">
+      <UCarousel
+        v-if="filteredProducts.length > 0"
+        v-slot="{ item }"
+        :items="filteredProducts"
+        :ui="{ 
+          root: 'w-full relative',
+          viewport: 'w-full overflow-hidden',
+          container: 'flex gap-4',
+          item: 'flex-shrink-0 basis-full sm:basis-1/2 md:basis-1/3 lg:basis-1/4',
+          dots: 'mt-6',
+          prev: 'absolute -left-12 top-1/2 -translate-y-1/2 z-10',
+          next: 'absolute -right-12 top-1/2 -translate-y-1/2 z-10'
+        }"
+        :prev="{ 
+          color: 'primary', 
+          variant: 'solid',
+          size: 'lg',
+          square: true
+        }"
+        :next="{ 
+          color: 'primary', 
+          variant: 'solid',
+          size: 'lg',
+          square: true
+        }"
+        loop
+        arrows
+        dots
+        :slides-to-scroll="1"
+      >
+        <ProductCard :product="item" />
+      </UCarousel>
+    </div>
+  </div>  
 </template>
+
 <script setup>
-const products = [
+const selectedCategory = ref('all')
+
+// Your products array (make sure it has at least 8 items)
+const products = ref([
   {
     id: 1,
-    name: "Product Name",
-    image: "/images/product1.jpg",
+    name: 'کفش ورزشی نایک ایر مکس',
+    price: '۲,۵۰۰,۰۰۰ تومان',
+    oldPrice: '۳,۰۰۰,۰۰۰ تومان', // optional
     rating: 4.5,
-    price: 29.99,
+    reviews: 128, // optional
+    image: 'https://picsum.photos/400/400?random=1',
+    category: 'male',
+    badge: { text: 'جدید', color: 'primary' } // optional
   },
-];
+ {
+    id: 1,
+    name: 'کفش ورزشی نایک ایر مکس',
+    price: '۲,۵۰۰,۰۰۰ تومان',
+    oldPrice: '۳,۰۰۰,۰۰۰ تومان', // optional
+    rating: 4.5,
+    reviews: 128, // optional
+    image: 'https://picsum.photos/400/400?random=1',
+    category: 'male',
+    badge: { text: 'جدید', color: 'primary' } // optional
+  },
+ {
+    id: 1,
+    name: 'کفش ورزشی نایک ایر مکس',
+    price: '۲,۵۰۰,۰۰۰ تومان',
+    oldPrice: '۳,۰۰۰,۰۰۰ تومان', // optional
+    rating: 4.5,
+    reviews: 128, // optional
+    image: 'https://picsum.photos/400/400?random=1',
+    category: 'male',
+    badge: { text: 'جدید', color: 'primary' } // optional
+  },
+ {
+    id: 1,
+    name: 'کفش ورزشی نایک ایر مکس',
+    price: '۲,۵۰۰,۰۰۰ تومان',
+    oldPrice: '۳,۰۰۰,۰۰۰ تومان', // optional
+    rating: 4.5,
+    reviews: 128, // optional
+    image: 'https://picsum.photos/400/400?random=1',
+    category: 'male',
+    badge: { text: 'جدید', color: 'primary' } // optional
+  },
+ {
+    id: 1,
+    name: 'کفش ورزشی نایک ایر مکس',
+    price: '۲,۵۰۰,۰۰۰ تومان',
+    oldPrice: '۳,۰۰۰,۰۰۰ تومان', // optional
+    rating: 4.5,
+    reviews: 128, // optional
+    image: 'https://picsum.photos/400/400?random=1',
+    category: 'male',
+    badge: { text: 'جدید', color: 'primary' } // optional
+  },])
+  const banners = ref([
+  {
+    id: 1,
+    image: 'https://picsum.photos/1920/600?random=1',
+    url: '/collection/summer',
+    alt: 'تخفیف تابستانه',
+    hoverText: 'مشاهده کلکسیون تابستان' // Text shown on cursor hover
+  },
+  {
+    id: 2,
+    image: 'https://picsum.photos/1920/600?random=2',
+    url: '/new-arrivals',
+    alt: 'محصولات جدید',
+    hoverText: 'محصولات جدید را ببینید'
+  },
+  {
+    id: 3,
+    image: 'https://picsum.photos/1920/600?random=3',
+    url: '/brands/dior',
+    external: false,
+    alt: 'برند دیور',
+    hoverText: 'مشاهده عطرهای دیور'
+  },
+  {
+    id: 4,
+    image: 'https://picsum.photos/1920/600?random=4',
+    url: 'https://example.com/special-offer',
+    external: true,
+    alt: 'پیشنهاد ویژه',
+    hoverText: 'پیشنهاد ویژه - کلیک کنید'
+  }
+])
+
+// Filter products based on selected category
+const filteredProducts = computed(() => {
+  if (selectedCategory.value === 'all') {
+    return products.value
+  }
+  return products.value.filter(p => p.category === selectedCategory.value)
+})
+
 </script>

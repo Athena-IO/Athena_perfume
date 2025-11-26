@@ -1,9 +1,9 @@
 <template>
-  <NuxtLink 
-    v-if="product && product.id"
-    :to="`/products/${product.id}`"
-    class="block border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
-  >
+<NuxtLink
+  v-if="product && product.slug"
+  :to="`/products/${product.slug}`"
+  class="block border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
+>
     <!-- Product Image -->
     <div class="relative aspect-square bg-gray-100">
       <img 

@@ -299,60 +299,66 @@ const selectedCategory = ref("all");
 const products = ref([
   {
     id: 1,
+    slug: "nike-air-max-1",
     name: "کفش ورزشی نایک ایر مکس",
     price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان", // optional
+    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
     rating: 4.5,
-    reviews: 128, // optional
+    reviews: 128,
     image: "https://picsum.photos/400/400?random=1",
     category: "male",
-    badge: { text: "جدید", color: "primary" }, // optional
+    badge: { text: "جدید", color: "primary" },
   },
   {
-    id: 1,
+    id: 2,
+    slug: "nike-air-max-2",
     name: "کفش ورزشی نایک ایر مکس",
     price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان", // optional
+    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
     rating: 4.5,
-    reviews: 128, // optional
-    image: "https://picsum.photos/400/400?random=1",
+    reviews: 128,
+    image: "https://picsum.photos/400/400?random=2",
     category: "male",
-    badge: { text: "جدید", color: "primary" }, // optional
+    badge: { text: "جدید", color: "primary" },
   },
   {
-    id: 1,
+    id: 3,
+    slug: "nike-air-max-3",
     name: "کفش ورزشی نایک ایر مکس",
     price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان", // optional
+    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
     rating: 4.5,
-    reviews: 128, // optional
-    image: "https://picsum.photos/400/400?random=1",
+    reviews: 128,
+    image: "https://picsum.photos/400/400?random=3",
     category: "male",
-    badge: { text: "جدید", color: "primary" }, // optional
+    badge: { text: "جدید", color: "primary" },
   },
   {
-    id: 1,
+    id: 4,
+    slug: "nike-air-max-4",
     name: "کفش ورزشی نایک ایر مکس",
     price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان", // optional
+    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
     rating: 4.5,
-    reviews: 128, // optional
-    image: "https://picsum.photos/400/400?random=1",
+    reviews: 128,
+    image: "https://picsum.photos/400/400?random=4",
     category: "male",
-    badge: { text: "جدید", color: "primary" }, // optional
+    badge: { text: "جدید", color: "primary" },
   },
   {
-    id: 1,
+    id: 5,
+    slug: "nike-air-max-5",
     name: "کفش ورزشی نایک ایر مکس",
     price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان", // optional
+    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
     rating: 4.5,
-    reviews: 128, // optional
-    image: "https://picsum.photos/400/400?random=1",
+    reviews: 128,
+    image: "https://picsum.photos/400/400?random=5",
     category: "male",
-    badge: { text: "جدید", color: "primary" }, // optional
+    badge: { text: "جدید", color: "primary" },
   },
 ]);
+
 const banners = ref([
   {
     id: 1,

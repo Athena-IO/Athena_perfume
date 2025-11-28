@@ -8,72 +8,80 @@
         :autoplay-delay="7000"
       />
     </div>
-    <div class="grid lg:grid-cols-2 grid-cols-1 items-center min-h-[70vh]">
-      <!-- بخش عکس – دقیقاً همون کد اصلی خودت، هیچ تغییری نداده -->
-      <div class="pl-25">
-        <img
-          src="https://cdn.mos.cms.futurecdn.net/VzUqgr8pfbNcfXrpzeVBPE.jpg"
-          alt=""
-          class="w-full h-auto rounded-lg"
-        />
-      </div>
+<div class="grid lg:grid-cols-2 grid-cols-1 items-center min-h-[70vh] gap-8">
+  <!-- بخش عکس با افکت مشابه اول -->
+  <div class="pl-0 lg:pl-25 order-2 lg:order-1">
+    <div class="relative group">
+      <div
+        class="absolute inset-0 bg-primary/15 rounded-3xl blur-3xl group-hover:blur-xl transition-all duration-700 -z-10"
+      ></div>
 
-      <!-- بخش متن – دقیقاً همونی که گفتی خیلی خوبه و دوست داری -->
-      <div class="flex flex-col gap-8 text-right" dir="rtl">
-        <div class="pr-0 lg:pr-14 xl:pr-20 space-y-7">
-          <h2
-            class="text-5xl lg:text-6xl font-black leading-tight text-gray-900"
-          >
-            کیفیت دیدتان را <span class="text-primary">تغییر دهید</span>
-          </h2>
-
-          <p class="text-2xl lg:text-3xl font-bold text-gray-800">
-            رایحه مخصوص به خودتان را کشف کنید!
-          </p>
-
-          <p class="text-xl lg:text-2xl font-semibold text-gray-700">
-            بهترین کیفیت! مناسب‌ترین قیمت!
-          </p>
-        </div>
-
-        <!-- دکمه‌ها – بزرگ‌تر، شیک‌تر، با انیمیشن نرم -->
-        <div class="flex flex-wrap gap-5 mt-6 pr-0 lg:pr-14">
-          <UButton
-            to="/products?gender=male"
-            color="primary"
-            variant="solid"
-            size="xl"
-            class="px-16 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-          >
-            مردانه
-          </UButton>
-
-          <UButton
-            to="/products?gender=female"
-            color="primary"
-            variant="outline"
-            size="xl"
-            class="px-16 py-5 text-xl font-bold rounded-xl border-2 hover:bg-primary/5 transform hover:scale-105 transition-all duration-300"
-          >
-            زنانه
-          </UButton>
-        </div>
-
-        <!-- متن تشویقی کوچیک (اگه نمی‌خوای پاکش کن) -->
-        <p class="text-sm lg:text-base text-gray-500 pr-0 lg:pr-14 mt-4">
-          بیش از ۵۰۰ رایحه اورجینال • ضمانت اصالت • ارسال رایگان
-        </p>
-      </div>
+      <img
+        src="https://cdn.mos.cms.futurecdn.net/VzUqgr8pfbNcfXrpzeVBPE.jpg"
+        alt="عطر لوکس"
+        class="w-full h-auto rounded-lg shadow-lg object-cover group-hover:scale-[1.02] transition-transform duration-800"
+        loading="lazy"
+      />
     </div>
   </div>
-  <div class="w-full px-4 sm:px-6 lg:px-8">
+
+  <!-- بخش متن -->
+  <div class="flex flex-col gap-8 text-right order-1 lg:order-2" dir="rtl">
+    <div class="pr-0 lg:pr-14 xl:pr-20 space-y-7">
+      <h2 class="text-5xl lg:text-6xl font-black leading-tight text-highlighted">
+        کیفیت دیدتان را <span class="text-primary">تغییر دهید</span>
+      </h2>
+
+      <p class="text-2xl lg:text-3xl font-bold text-default">
+        رایحه مخصوص به خودتان را کشف کنید!
+      </p>
+
+      <p class="text-xl lg:text-2xl font-semibold text-toned">
+        بهترین کیفیت! مناسب‌ترین قیمت!
+      </p>
+    </div>
+
+    <!-- دکمه‌ها -->
+    <div class="flex flex-wrap gap-5 mt-6 pr-0 lg:pr-14">
+      <UButton
+        to="/products?gender=male"
+        color="primary"
+        variant="solid"
+        size="xl"
+        class="px-16 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+      >
+        مردانه
+      </UButton>
+
+      <UButton
+        to="/products?gender=female"
+        color="primary"
+        variant="outline"
+        size="xl"
+        class="px-16 py-5 text-xl font-bold rounded-xl border-2 transform hover:scale-105 transition-all duration-300"
+      >
+        زنانه
+      </UButton>
+    </div>
+
+    <!-- متن تشویقی -->
+    <p class="text-sm lg:text-base text-muted pr-0 lg:pr-14 mt-4">
+      بیش از ۵۰۰ رایحه اورجینال • ضمانت اصالت • ارسال رایگان
+    </p>
+  </div>
+</div>
+
+  </div>
+
+  <!-- Gender Category Boxes -->
+  <div class="w-full px-4 sm:px-6 lg:px-8 mt-16">
     <div
       class="grid lg:grid-cols-2 grid-cols-1 gap-6 items-center min-h-[30vh]"
     >
-      <!-- Box 1 -->
+      <!-- Box 1 - مردانه -->
       <ULink to="/men-products" class="group block h-full" raw>
         <UCard
-          class="relative overflow-hidden h-full transition-all duration-300 group-hover:shadow-xl"
+          class="relative overflow-hidden h-full transition-all duration-300 group-hover:shadow-xl border-default"
         >
           <div class="relative h-[300px] lg:h-[400px]">
             <!-- Image -->
@@ -91,7 +99,7 @@
             <!-- Text -->
             <div class="absolute inset-0 flex items-center justify-center">
               <p
-                class="text-white text-3xl font-bold z-10 transform group-hover:scale-110 transition-transform duration-300"
+                class="text-white text-3xl font-bold z-10 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
               >
                 مردانه
               </p>
@@ -100,10 +108,10 @@
         </UCard>
       </ULink>
 
-      <!-- Box 2 -->
+      <!-- Box 2 - زنانه -->
       <ULink to="/women-products" class="group block h-full" raw>
         <UCard
-          class="relative overflow-hidden h-full transition-all duration-300 group-hover:shadow-xl"
+          class="relative overflow-hidden h-full transition-all duration-300 group-hover:shadow-xl border-default"
         >
           <div class="relative h-[300px] lg:h-[400px]">
             <!-- Image -->
@@ -121,7 +129,7 @@
             <!-- Text -->
             <div class="absolute inset-0 flex items-center justify-center">
               <p
-                class="text-white text-3xl font-bold z-10 transform group-hover:scale-110 transition-transform duration-300"
+                class="text-white text-3xl font-bold z-10 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-lg"
               >
                 زنانه
               </p>
@@ -131,7 +139,9 @@
       </ULink>
     </div>
   </div>
-  <div class="overflow-hidden">
+
+  <!-- Product Categories & Carousel -->
+  <div class="overflow-hidden mt-16">
     <div class="flex items-center justify-between p-6">
       <!-- Show all button on the left -->
       <div>
@@ -143,7 +153,7 @@
           class="text-2xl"
           :class="
             selectedCategory === 'all'
-              ? 'border-b-2 border-black dark:border-white rounded-none'
+              ? 'border-b-2 border-primary rounded-none'
               : ''
           "
         >
@@ -161,7 +171,7 @@
           class="text-2xl"
           :class="
             selectedCategory === 'female'
-              ? 'border-b-2 border-black dark:border-white rounded-none'
+              ? 'border-b-2 border-primary rounded-none'
               : ''
           "
         >
@@ -175,7 +185,7 @@
           class="text-2xl"
           :class="
             selectedCategory === 'male'
-              ? 'border-b-2 border-black dark:border-white rounded-none'
+              ? 'border-b-2 border-primary rounded-none'
               : ''
           "
         >
@@ -220,14 +230,14 @@
       </UCarousel>
     </div>
   </div>
-  <section
-    class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-16 px-4"
-  >
+
+  <!-- Hero Section -->
+  <section class="min-h-screen  backdrop-blur-sm py-16 px-4">
     <div class="mx-auto max-w-7xl">
       <div
         class="grid lg:grid-cols-2 grid-cols-1 items-center gap-8 lg:gap-12 min-h-[75vh]"
       >
-        <!-- عکس – فقط کمی عریض‌تر + نزدیک به لبه چپ -->
+        <!-- عکس -->
         <div class="order-2 lg:order-1 -ml-4 lg:-ml-12 xl:-ml-20">
           <div class="relative group">
             <div
@@ -243,28 +253,28 @@
           </div>
         </div>
 
-        <!-- متن – دقیقاً همون اندازه و استایل قبلی که خیلی دوست داشتی -->
+        <!-- متن -->
         <div
           class="order-1 lg:order-2 flex flex-col gap-8 text-right pr-4 lg:pr-0"
           dir="rtl"
         >
           <div class="space-y-6 lg:pr-20">
             <h2
-              class="text-5xl lg:text-6xl font-black leading-tight text-gray-900"
+              class="text-5xl lg:text-6xl font-black leading-tight text-highlighted"
             >
               کیفیت دیدتان را <span class="text-primary">تغییر دهید</span>
             </h2>
 
-            <p class="text-2xl lg:text-3xl font-bold text-gray-800">
+            <p class="text-2xl lg:text-3xl font-bold text-default">
               رایحه مخصوص به خودتان را کشف کنید!
             </p>
 
-            <p class="text-xl lg:text-2xl font-semibold text-gray-700">
+            <p class="text-xl lg:text-2xl font-semibold text-toned">
               بهترین کیفیت! مناسب‌ترین قیمت!
             </p>
           </div>
 
-          <div class="flex justify-center lg:justify-start mt-8 pr-25">
+          <div class="flex justify-center lg:justify-start mt-8 lg:pr-20">
             <UButton
               to="/products"
               color="primary"
@@ -273,7 +283,7 @@
               class="relative overflow-hidden group/btn px-20 py-7 text-2xl font-bold rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-500"
             >
               <span
-                class="absolute inset-0 w-full h-full bg-white opacity-0 group-hover/btn:opacity-30 translate-x-[-100%] group-hover/btn:translate-x-full transition-transform duration-1000 skew-x-12"
+                class="absolute inset-0 w-full h-full bg-white dark:bg-white/20 opacity-0 group-hover/btn:opacity-30 translate-x-[-100%] group-hover/btn:translate-x-full transition-transform duration-1000 skew-x-12"
               ></span>
 
               <span class="relative z-10 flex items-center gap-3">
@@ -283,7 +293,7 @@
             </UButton>
           </div>
 
-          <p class="text-sm text-gray-600 mt-6 opacity-80">
+          <p class="text-sm text-muted mt-6 lg:pr-20">
             بیش از ۵۰۰ رایحه اورجینال با ضمانت اصالت
           </p>
         </div>
@@ -365,7 +375,7 @@ const banners = ref([
     image: "https://picsum.photos/1920/600?random=1",
     url: "/collection/summer",
     alt: "تخفیف تابستانه",
-    hoverText: "مشاهده کلکسیون تابستان", // Text shown on cursor hover
+    hoverText: "مشاهده کلکسیون تابستان",
   },
   {
     id: 2,

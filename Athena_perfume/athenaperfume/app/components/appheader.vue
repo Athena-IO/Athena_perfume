@@ -38,8 +38,6 @@
         </transition>
       </div>
 
-      <!-- گیت‌هاب (اختیاری) -->
-      <!-- <UButton ... /> -->
     </template>
   </UHeader>
 

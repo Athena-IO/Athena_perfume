@@ -8,69 +8,72 @@
         :autoplay-delay="7000"
       />
     </div>
-<div class="grid lg:grid-cols-2 grid-cols-1 items-center min-h-[70vh] gap-8">
-  <!-- بخش عکس با افکت مشابه اول -->
-  <div class="pl-0 lg:pl-25 order-2 lg:order-1">
-    <div class="relative group">
-      <div
-        class="absolute inset-0 bg-primary/15 rounded-3xl blur-3xl group-hover:blur-xl transition-all duration-700 -z-10"
-      ></div>
+    <div
+      class="grid lg:grid-cols-2 grid-cols-1 items-center min-h-[70vh] gap-8"
+    >
+      <!-- بخش عکس با افکت مشابه اول -->
+      <div class="pl-0 lg:pl-25 order-2 lg:order-1">
+        <div class="relative group">
+          <div
+            class="absolute inset-0 bg-primary/15 rounded-3xl blur-3xl group-hover:blur-xl transition-all duration-700 -z-10"
+          ></div>
 
-      <img
-        src="https://cdn.mos.cms.futurecdn.net/VzUqgr8pfbNcfXrpzeVBPE.jpg"
-        alt="عطر لوکس"
-        class="w-full h-auto rounded-lg shadow-lg object-cover group-hover:scale-[1.02] transition-transform duration-800"
-        loading="lazy"
-      />
+          <img
+            src="https://cdn.mos.cms.futurecdn.net/VzUqgr8pfbNcfXrpzeVBPE.jpg"
+            alt="عطر لوکس"
+            class="w-full h-auto rounded-lg shadow-lg object-cover group-hover:scale-[1.02] transition-transform duration-800"
+            loading="lazy"
+          />
+        </div>
+      </div>
+
+      <!-- بخش متن -->
+      <div class="flex flex-col gap-8 text-right order-1 lg:order-2" dir="rtl">
+        <div class="pr-0 lg:pr-14 xl:pr-20 space-y-7">
+          <h2
+            class="text-5xl lg:text-6xl font-black leading-tight text-highlighted"
+          >
+            کیفیت دیدتان را <span class="text-primary">تغییر دهید</span>
+          </h2>
+
+          <p class="text-2xl lg:text-3xl font-bold text-default">
+            رایحه مخصوص به خودتان را کشف کنید!
+          </p>
+
+          <p class="text-xl lg:text-2xl font-semibold text-toned">
+            بهترین کیفیت! مناسب‌ترین قیمت!
+          </p>
+        </div>
+
+        <!-- دکمه‌ها -->
+        <div class="flex flex-wrap gap-5 mt-6 pr-0 lg:pr-14">
+          <UButton
+            to="/products?gender=male"
+            color="primary"
+            variant="solid"
+            size="xl"
+            class="px-16 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
+          >
+            مردانه
+          </UButton>
+
+          <UButton
+            to="/products?gender=female"
+            color="primary"
+            variant="outline"
+            size="xl"
+            class="px-16 py-5 text-xl font-bold rounded-xl border-2 transform hover:scale-105 transition-all duration-300"
+          >
+            زنانه
+          </UButton>
+        </div>
+
+        <!-- متن تشویقی -->
+        <p class="text-sm lg:text-base text-muted pr-0 lg:pr-14 mt-4">
+          بیش از ۵۰۰ رایحه اورجینال • ضمانت اصالت • ارسال رایگان
+        </p>
+      </div>
     </div>
-  </div>
-
-  <!-- بخش متن -->
-  <div class="flex flex-col gap-8 text-right order-1 lg:order-2" dir="rtl">
-    <div class="pr-0 lg:pr-14 xl:pr-20 space-y-7">
-      <h2 class="text-5xl lg:text-6xl font-black leading-tight text-highlighted">
-        کیفیت دیدتان را <span class="text-primary">تغییر دهید</span>
-      </h2>
-
-      <p class="text-2xl lg:text-3xl font-bold text-default">
-        رایحه مخصوص به خودتان را کشف کنید!
-      </p>
-
-      <p class="text-xl lg:text-2xl font-semibold text-toned">
-        بهترین کیفیت! مناسب‌ترین قیمت!
-      </p>
-    </div>
-
-    <!-- دکمه‌ها -->
-    <div class="flex flex-wrap gap-5 mt-6 pr-0 lg:pr-14">
-      <UButton
-        to="/products?gender=male"
-        color="primary"
-        variant="solid"
-        size="xl"
-        class="px-16 py-5 text-xl font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300"
-      >
-        مردانه
-      </UButton>
-
-      <UButton
-        to="/products?gender=female"
-        color="primary"
-        variant="outline"
-        size="xl"
-        class="px-16 py-5 text-xl font-bold rounded-xl border-2 transform hover:scale-105 transition-all duration-300"
-      >
-        زنانه
-      </UButton>
-    </div>
-
-    <!-- متن تشویقی -->
-    <p class="text-sm lg:text-base text-muted pr-0 lg:pr-14 mt-4">
-      بیش از ۵۰۰ رایحه اورجینال • ضمانت اصالت • ارسال رایگان
-    </p>
-  </div>
-</div>
-
   </div>
 
   <!-- Gender Category Boxes -->
@@ -232,7 +235,7 @@
   </div>
 
   <!-- Hero Section -->
-  <section class="min-h-screen  backdrop-blur-sm py-16 px-4">
+  <section class="min-h-screen backdrop-blur-sm py-16 px-4">
     <div class="mx-auto max-w-7xl">
       <div
         class="grid lg:grid-cols-2 grid-cols-1 items-center gap-8 lg:gap-12 min-h-[75vh]"
@@ -308,64 +311,107 @@ const selectedCategory = ref("all");
 // Your products array (make sure it has at least 8 items)
 const products = ref([
   {
-    id: 1,
-    slug: "nike-air-max-1",
-    name: "کفش ورزشی نایک ایر مکس",
-    price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
-    rating: 4.5,
-    reviews: 128,
-    image: "https://picsum.photos/400/400?random=1",
-    category: "male",
-    badge: { text: "جدید", color: "primary" },
-  },
-  {
-    id: 2,
-    slug: "nike-air-max-2",
-    name: "کفش ورزشی نایک ایر مکس",
-    price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
-    rating: 4.5,
-    reviews: 128,
-    image: "https://picsum.photos/400/400?random=2",
-    category: "male",
-    badge: { text: "جدید", color: "primary" },
-  },
-  {
-    id: 3,
-    slug: "nike-air-max-3",
-    name: "کفش ورزشی نایک ایر مکس",
-    price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
-    rating: 4.5,
-    reviews: 128,
-    image: "https://picsum.photos/400/400?random=3",
-    category: "male",
-    badge: { text: "جدید", color: "primary" },
-  },
-  {
     id: 4,
     slug: "nike-air-max-4",
-    name: "کفش ورزشی نایک ایر مکس",
-    price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
+    name: "کفش ورزشی نایک ایر مکس مدل ۴",
+    price: 2500000,
+    discountPercent: 10,
     rating: 4.5,
     reviews: 128,
     image: "https://picsum.photos/400/400?random=4",
     category: "male",
     badge: { text: "جدید", color: "primary" },
   },
+
   {
     id: 5,
-    slug: "nike-air-max-5",
-    name: "کفش ورزشی نایک ایر مکس",
-    price: "۲,۵۰۰,۰۰۰ تومان",
-    oldPrice: "۳,۰۰۰,۰۰۰ تومان",
-    rating: 4.5,
-    reviews: 128,
+    slug: "adidas-ultra-boost-5",
+    name: "کفش آدیداس اولترا بوست ۵",
+    price: 3200000,
+    discountPercent: 15,
+    rating: 4.7,
+    reviews: 210,
     image: "https://picsum.photos/400/400?random=5",
     category: "male",
-    badge: { text: "جدید", color: "primary" },
+    badge: { text: "پرفروش", color: "success" },
+  },
+
+  {
+    id: 6,
+    slug: "puma-runner-6",
+    name: "کتانی پوما رانر ۶",
+    price: 1980000,
+    discountPercent: 8,
+    rating: 4.2,
+    reviews: 74,
+    image: "https://picsum.photos/400/400?random=6",
+    category: "female",
+    badge: { text: "ویژه", color: "warning" },
+  },
+
+  {
+    id: 7,
+    slug: "reebok-sprint-7",
+    name: "کفش ریebok اسپرینت ۷",
+    price: 2600000,
+    discountPercent: 12,
+    rating: 4.3,
+    reviews: 91,
+    image: "https://picsum.photos/400/400?random=7",
+    category: "male",
+    badge: { text: "تخفیف‌دار", color: "error" },
+  },
+
+  {
+    id: 8,
+    slug: "newbalance-574-8",
+    name: "نیو بالانس مدل ۵۷۴",
+    price: 3000000,
+    discountPercent: 5,
+    rating: 4.6,
+    reviews: 52,
+    image: "https://picsum.photos/400/400?random=8",
+    category: "female",
+    badge: { text: "پیشنهادی", color: "primary" },
+  },
+
+  {
+    id: 9,
+    slug: "asics-gel-kayano-9",
+    name: "کفش آسیکس ژل کایانو ۹",
+    price: 2850000,
+    discountPercent: 18,
+    rating: 4.8,
+    reviews: 184,
+    image: "https://picsum.photos/400/400?random=9",
+    category: "male",
+    badge: { text: "پرفروش", color: "success" },
+  },
+
+  {
+    id: 10,
+    slug: "fila-energy-10",
+    name: "کتانی فیلا انرژی ۱۰",
+    price: 1750000,
+    discountPercent: 7,
+    rating: 4.1,
+    reviews: 35,
+    image: "https://picsum.photos/400/400?random=10",
+    category: "female",
+    badge: { text: "اقتصادی", color: "gray" },
+  },
+
+  {
+    id: 11,
+    slug: "converse-allstar-11",
+    name: "کتانی کانورس آل‌استار ۱۱",
+    price: 2300000,
+    discountPercent: 9,
+    rating: 4.4,
+    reviews: 147,
+    image: "https://picsum.photos/400/400?random=11",
+    category: "unisex",
+    badge: { text: "کلاسیک", color: "warning" },
   },
 ]);
 

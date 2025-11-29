@@ -3,7 +3,7 @@
     <!-- لوگو -->
     <template #title>
       <NuxtLink to="/" class="font-black text-xl flex items-center gap-3">
-        <UIcon name="i-lucide-droplet"class="w-7 h-7 text-primary" />
+        <UIcon name="i-lucide-droplet" class="w-7 h-7 text-primary" />
         Athena Perfume
       </NuxtLink>
     </template>
@@ -37,7 +37,6 @@
           </div>
         </transition>
       </div>
-
     </template>
   </UHeader>
 
@@ -47,23 +46,23 @@
 
 <script setup>
 // بدون lang="ts" → فقط JavaScript خالص
-import { useCartStore } from "~/composables/stores/cart"
+import { useCartStore } from "~/composables/stores/cart";
 
-const cartStore = useCartStore()
-const cartOpen = ref(false)
+const cartStore = useCartStore();
+const cartOpen = ref(false);
 
 // تعداد کل آیتم‌ها (با چک امن)
 const totalItems = computed(() => {
-  return cartStore.items.reduce((sum, item) => sum + (item.qty || 0), 0)
-})
+  return cartStore.items.length;
+});
 
 // منوی اصلی
 const navItems = [
   { label: "تخفیف‌ها", to: "/discounts" },
   { label: "عطر مردانه", to: "/men" },
   { label: "عطر زنانه", to: "/women" },
-  { label: "فروشگاه", to: "/products" }
-]
+  { label: "فروشگاه", to: "/products" },
+];
 </script>
 
 <style scoped>

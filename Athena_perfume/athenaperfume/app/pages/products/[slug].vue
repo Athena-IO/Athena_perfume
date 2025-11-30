@@ -1,41 +1,7 @@
 <template>
   <UContainer class="py-6 sm:py-10">
     <div v-if="product" class="max-w-4xl mx-auto space-y-8">
-      <!-- Main Carousel -->
-      <UCarousel
-        v-slot="{ item }"
-        ref="carousel"
-        :items="productImages"
-        arrows
-        dots
-        class="w-full rounded-xl overflow-hidden"
-        @select="onSelectImage"
-      >
-        <img
-          :src="item"
-          :alt="product.name"
-          class="w-full h-80 object-cover rounded-lg"
-        />
-      </UCarousel>
-
-      <!-- Thumbnails -->
-      <div class="flex gap-3 justify-center">
-        <div
-          v-for="(image, index) in productImages"
-          :key="index"
-          class="cursor-pointer transition-all duration-200"
-          :class="[
-            activeImageIndex === index
-              ? 'ring-2 ring-primary opacity-100'
-              : 'opacity-50 hover:opacity-75',
-          ]"
-          @click="selectImage(index)"
-        >
-          <UCard class="rounded-lg overflow-hidden">
-            <img :src="image" class="w-20 h-20 object-cover" />
-          </UCard>
-        </div>
-      </div>
+      <ProductGallery :images="productImages" />
 
       <!-- Product Info -->
       <div class="space-y-6">

@@ -11,9 +11,34 @@
     <!-- منوی اصلی -->
     <UNavigationMenu :items="navItems" />
 
-    <!-- سمت راست: تم + سبد خرید -->
+    <!-- سمت راست: تم + کاربر + سبد خرید -->
     <template #right>
       <UColorModeButton />
+
+      <!-- بخش احراز هویت کاربر -->
+      <div v-if="isAuthenticated">
+        <UDropdownMenu :items="userMenuItems">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            size="md"
+            :label="user?.fullName || 'کاربر'"
+            icon="i-lucide-user"
+          />
+        </UDropdownMenu>
+      </div>
+
+      <!-- دکمه ورود برای کاربران غیر لاگین -->
+      <div v-else>
+        <UButton
+          color="primary"
+          variant="soft"
+          size="md"
+          label="ورود / ثبت‌نام"
+          icon="i-lucide-log-in"
+          to="/login"
+        />
+      </div>
 
       <!-- دکمه سبد خرید با تعداد آیتم -->
       <div class="relative">
@@ -45,15 +70,74 @@
 </template>
 
 <script setup>
-// بدون lang="ts" → فقط JavaScript خالص
 import { useCartStore } from "~/composables/stores/cart";
+import { useAuth } from "~/composables/useAuth";
 
 const cartStore = useCartStore();
 const cartOpen = ref(false);
 
+// احراز هویت
+const { user, isAuthenticated, isAdmin, logout } = useAuth();
+
 // تعداد کل آیتم‌ها (با چک امن)
 const totalItems = computed(() => {
   return cartStore.items.length;
+});
+
+// منوی کاربر
+const userMenuItems = computed(() => {
+  const items = [
+    [
+      {
+        label: user.value?.fullName || "کاربر",
+        icon: "i-lucide-user",
+        type: "label",
+      },
+    ],
+    [
+      {
+        label: "پروفایل",
+        icon: "i-lucide-user-circle",
+        to: "/profile",
+      },
+      {
+        label: "سفارش‌های من",
+        icon: "i-lucide-shopping-bag",
+        to: "/orders",
+      },
+      {
+        label: "تنظیمات",
+        icon: "i-lucide-settings",
+        to: "/settings",
+      },
+    ],
+  ];
+
+  // اگر ادمین است، منوی پنل ادمین اضافه شود
+  if (isAdmin.value) {
+    items.push([
+      {
+        label: "پنل مدیریت",
+        icon: "i-lucide-shield",
+        to: "/admin",
+        color: "primary",
+      },
+    ]);
+  }
+
+  // دکمه خروج
+  items.push([
+    {
+      label: "خروج از حساب",
+      icon: "i-lucide-log-out",
+      color: "error",
+      onSelect: () => {
+        logout();
+      },
+    },
+  ]);
+
+  return items;
 });
 
 // منوی اصلی

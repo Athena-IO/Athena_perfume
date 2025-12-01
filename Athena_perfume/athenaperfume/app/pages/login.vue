@@ -65,44 +65,49 @@ const identifier = ref("");
 const password = ref("");
 const pending = ref(false);
 
-const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 });
-const isAdminCookie = useCookie("isAdmin", { maxAge: 60 * 60 * 24 });
+// فقط useAuth رو بگیر
+const { setUser } = useAuth();
+const router = useRouter();
 
 const handleLogin = async () => {
   pending.value = true;
   try {
-    // آدرس دقیقاً همونی که سرور Django روش اجرا شده
     const res = await $fetch("/api/accounts/login/", {
       method: "POST",
       body: {
         identifier: identifier.value,
         password: password.value,
       },
-      credentials: "include", // برای httpOnly cookie
+      // credentials: "include" ← اگه بک‌اندت httpOnly کوکی می‌ده نگه دار، وگرنه حذف کن
     });
 
-    accessCookie.value = res.access;
-    isAdminCookie.value = res.role === "admin" ? "true" : "false";
+    // مهم: کوکی access رو دستی ست کن (حتی اگه httpOnly باشه، بعضی بک‌اندا هر دو رو می‌دن)
+    const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 * 7 });
+    accessCookie.value = res.access || res.access_token;
 
+    // مهم‌ترین خط: کاربر رو توی useAuth ست کن
+    setUser(res.user || res); // بک‌اندت یا res.user می‌ده یا همه رو توی رزالت
+
+    // توست خوش‌آمدگویی
     useAppToast().toastSuccess({
-      title: "ورود موفق",
-      description: "خوش آمدید!",
+      title:
+        "خوش آمدی " + (res.user?.full_name || res.user?.username || "کاربر"),
+      description: "ورود با موفقیت انجام شد",
     });
-    useRouter().push(res.role === "admin" ? "/admin" : "/");
+
+    // ریدایرکت
+    const role = res.user?.role || res.role;
+    router.push(role === "admin" ? "/admin" : "/");
   } catch (err) {
     console.error("خطای ورود:", err);
 
-    let message = "مشکلی پیش اومد، دوباره تلاش کن";
-
-    // ارورهای رایج و متن فارسی قشنگ
+    let message = "مشکلی پیش آمد، دوباره تلاش کن";
     if (err?.status === 401 || err?.status === 400) {
-      message = err?.data?.detail || "شناسه یا رمز عبور اشتباهه";
+      message = err?.data?.detail || "شناسه یا رمز عبور اشتباه است";
     } else if (err?.status === 404) {
-      message = "آدرس سرور پیدا نشد. بک‌اند رو اجرا کردی؟";
+      message = "سرور پیدا نشد. بک‌اند اجرا شده؟";
     } else if (err?.status >= 500) {
-      message = "سرور مشکل داره، یه کم دیگه امتحان کن";
-    } else if (!navigator.onLine) {
-      message = "اینترنتت وصل نیست";
+      message = "سرور مشکلی دارد، بعداً تلاش کن";
     }
 
     useAppToast().toastError({

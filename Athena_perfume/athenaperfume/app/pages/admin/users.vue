@@ -66,15 +66,18 @@
 
 <script setup>
 definePageMeta({
-  middleware: "admin-only",
+  middleware: "admin-only", // این خودش با useAuth کار می‌کنه → کافیه!
 });
-import { useToast } from "#ui/composables/useToast";
+
 import { useRouter } from "vue-router";
+
+// useAuth رو وارد کن (حیاتی!)
+import { useAuth } from "~/composables/useAuth";
+const { user, isAuthenticated, isAdmin } = useAuth();
 
 const toast = useToast();
 const router = useRouter();
 
-// --- داده‌ها ---
 const admins = ref([]);
 const loading = ref(true);
 const showModal = ref(false);
@@ -82,21 +85,26 @@ const selectedId = ref(null);
 const password = ref("");
 const error = ref("");
 
-// رمز امنیتی (در پروداکشن از .env استفاده کن)
-const SECURITY_PASSWORD = "admin1234"; // یا: process.env.SECURITY_PASSWORD
+const SECURITY_PASSWORD = "admin1234"; // بعداً از env
 
-// --- دریافت ادمین‌ها ---
+// فقط از useAuth استفاده کن، نه کوکی مستقیم!
 const fetchAdmins = async () => {
   loading.value = true;
-  try {
-    const access = useCookie("access").value;
-    if (!access) return router.push("/login");
 
-    const users = await $fetch("http://127.0.0.1:8000/api/accounts/users/", {
-      headers: { Authorization: `Bearer ${access}` },
+  // اگر لاگین نیست یا ادمین نیست → خود middleware قبلاً باید گرفته باشه
+  // ولی برای اطمینان یه چک اضافه
+  if (!isAuthenticated.value || !isAdmin.value) {
+    router.push("/login");
+    return;
+  }
+
+  try {
+    const users = await $fetch("/api/accounts/users/", {
+      headers: {
+        Authorization: `Bearer ${useCookie("access").value}`, // فقط اینجا از کوکی استفاده کن
+      },
     });
 
-    // فقط ادمین‌ها + فقط فیلدهای لازم
     admins.value = users
       .filter((u) => u.role === "admin")
       .map((u) => ({
@@ -105,9 +113,10 @@ const fetchAdmins = async () => {
         email: u.email,
       }));
   } catch (err) {
+    console.error(err);
     toast.add({
       title: "خطا",
-      description: "دریافت ادمین‌ها ناموفق بود.",
+      description: "دریافت لیست ادمین‌ها ناموفق بود",
       color: "error",
     });
   } finally {
@@ -115,53 +124,33 @@ const fetchAdmins = async () => {
   }
 };
 
-// --- مودال حذف ---
-const openDelete = (id) => {
-  selectedId.value = id;
-  password.value = "";
-  error.value = "";
-  showModal.value = true;
-};
-
-const closeModal = () => {
-  showModal.value = false;
-  selectedId.value = null;
-};
-
 const confirmDelete = async () => {
   if (password.value !== SECURITY_PASSWORD) {
-    error.value = "رمز اشتباه است";
+    error.value = "رمز امنیتی اشتباه است";
     return;
   }
 
   try {
-    const access = useCookie("access").value;
     await $fetch(
       `http://127.0.0.1:8000/api/accounts/users/${selectedId.value}/`,
       {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${access}` },
+        headers: { Authorization: `Bearer ${useCookie("access").value}` },
       }
     );
 
-    toast.add({
-      title: "حذف شد",
-      description: "ادمین با موفقیت حذف شد.",
-      color: "success",
-    });
+    toast.add({ title: "موفق", description: "ادمین حذف شد", color: "success" });
     closeModal();
     fetchAdmins();
-  } catch {
-    toast.add({
-      title: "خطا",
-      description: "حذف ناموفق بود.",
-      color: "error",
-    });
+  } catch (err) {
+    toast.add({ title: "خطا", description: "حذف ناموفق بود", color: "error" });
   }
 };
 
-// لود اولیه
-onMounted(() => {
-  fetchAdmins();
+// فقط وقتی کاربر لود شد، دیتا رو بگیر
+watchEffect(() => {
+  if (isAuthenticated.value && isAdmin.value) {
+    fetchAdmins();
+  }
 });
 </script>

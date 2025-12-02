@@ -43,13 +43,17 @@ class Product(models.Model):
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='unisex')
 
     description = models.TextField()
-    price = models.DecimalField(max_digits=10, decimal_places=0)
+    #price = models.DecimalField(max_digits=10, decimal_places=0)
     old_price = models.DecimalField(max_digits=10, decimal_places=0, null=True, blank=True)
-    stock = models.PositiveIntegerField(default=0)
+    #stock = models.PositiveIntegerField(default=0)
 
     image = models.ImageField(upload_to='products/')
     additional_images = models.JSONField(default=list, blank=True)
-    volume_options = models.JSONField(default=list)
+    volume_options = models.JSONField(
+        default=list,
+        blank=True,
+        help_text='مثال: [{"label": "۵۰ میل", "value": 50, "price": 3200000, "stock": 15}, ...]'
+    )
 
     tags = models.ManyToManyField(Tag, blank=True, related_name='products')
 

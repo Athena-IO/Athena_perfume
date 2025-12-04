@@ -1,4 +1,3 @@
-<!-- ProductList.vue -->
 <template>
   <div class="p-6">
     <UContainer>
@@ -56,14 +55,32 @@ const props = defineProps({
   },
 });
 
+// Initialize with props
 const selectedCategory = ref(props.category);
 const selectedBrand = ref(props.brand);
 const selectedSort = ref("none");
 
+// Watch for prop changes and update local state
+watch(
+  () => props.category,
+  (newCategory) => {
+    selectedCategory.value = newCategory;
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.brand,
+  (newBrand) => {
+    selectedBrand.value = newBrand;
+  },
+  { immediate: true }
+);
+
 const products = ref([
   {
     id: 4,
-    slug: "dior-sauvage-4", // ✅ Add this
+    slug: "dior-sauvage-4",
     name: "دیور ساواج",
     price: 2500000,
     discountPercent: 10,
@@ -77,7 +94,7 @@ const products = ref([
   },
   {
     id: 5,
-    slug: "chanel-bleu-5", // ✅ Add this
+    slug: "chanel-bleu-5",
     name: "شنل بلو د شنل",
     price: 3200000,
     discountPercent: 15,
@@ -90,7 +107,7 @@ const products = ref([
   },
   {
     id: 6,
-    slug: "lancome-la-vie-6", // ✅ Add this
+    slug: "lancome-la-vie-6",
     name: "لانکوم لا ویه است بله",
     price: 1980000,
     discountPercent: 8,
@@ -104,7 +121,7 @@ const products = ref([
   },
   {
     id: 7,
-    slug: "versace-eros-7", // ✅ Add this
+    slug: "versace-eros-7",
     name: "ورساچه اروس",
     price: 2600000,
     discountPercent: 12,
@@ -118,7 +135,7 @@ const products = ref([
   },
   {
     id: 8,
-    slug: "ysl-libre-8", // ✅ Add this
+    slug: "ysl-libre-8",
     name: "ایو سن لورن لیبره",
     price: 3000000,
     discountPercent: 5,
@@ -132,7 +149,7 @@ const products = ref([
   },
   {
     id: 9,
-    slug: "creed-aventus-9", // ✅ Add this
+    slug: "creed-aventus-9",
     name: "کرید اونتوس",
     price: 2850000,
     discountPercent: 18,
@@ -145,7 +162,7 @@ const products = ref([
   },
   {
     id: 10,
-    slug: "burberry-her-10", // ✅ Add this
+    slug: "burberry-her-10",
     name: "بربری هر",
     price: 1750000,
     discountPercent: 7,
@@ -159,7 +176,7 @@ const products = ref([
   },
   {
     id: 11,
-    slug: "tomford-black-orchid-11", // ✅ Add this
+    slug: "tomford-black-orchid-11",
     name: "تام فورد بلک اورکید",
     price: 2300000,
     discountPercent: 9,
@@ -176,18 +193,22 @@ const products = ref([
 const filteredProducts = computed(() => {
   let list = [...products.value];
 
+  // Filter by category
   if (selectedCategory.value && selectedCategory.value !== "all") {
     list = list.filter((p) => p.category === selectedCategory.value);
   }
 
+  // Filter by brand
   if (selectedBrand.value) {
     list = list.filter((p) => p.brand === selectedBrand.value);
   }
 
-  if (selectedSort.value === "price_low_high")
+  // Sort
+  if (selectedSort.value === "price_low_high") {
     list.sort((a, b) => a.price - b.price);
-  if (selectedSort.value === "price_high_low")
+  } else if (selectedSort.value === "price_high_low") {
     list.sort((a, b) => b.price - a.price);
+  }
 
   return list;
 });

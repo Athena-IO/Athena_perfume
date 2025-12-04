@@ -142,9 +142,9 @@ const userMenuItems = computed(() => {
 
 // منوی اصلی
 const navItems = [
-  { label: "تخفیف‌ها", to: "/discounts" },
-  { label: "عطر مردانه", to: "/men" },
-  { label: "عطر زنانه", to: "/women" },
+  { label: "تخفیف‌ها", to: "/category/discounts" },
+  { label: "عطر مردانه", to: "/category/male" },
+  { label: "عطر زنانه", to: "/category/female" },
   { label: "فروشگاه", to: "/products" },
 ];
 </script>

@@ -6,9 +6,11 @@
         <aside class="lg:w-64 shrink-0">
           <ProductFilter
             :selectedCategory="selectedCategory"
+            :selectedBrands="selectedBrands"
             :selectedSort="selectedSort"
             :filtered-count="filteredProducts.length"
             @update:category="selectedCategory = $event"
+            @update:brands="selectedBrands = $event"
             @update:sort="selectedSort = $event"
           />
         </aside>
@@ -57,7 +59,7 @@ const props = defineProps({
 
 // Initialize with props
 const selectedCategory = ref(props.category);
-const selectedBrand = ref(props.brand);
+const selectedBrands = ref(props.brand ? [props.brand] : []);
 const selectedSort = ref("none");
 
 // Watch for prop changes and update local state
@@ -72,7 +74,7 @@ watch(
 watch(
   () => props.brand,
   (newBrand) => {
-    selectedBrand.value = newBrand;
+    selectedBrands.value = newBrand ? [newBrand] : [];
   },
   { immediate: true }
 );
@@ -198,9 +200,9 @@ const filteredProducts = computed(() => {
     list = list.filter((p) => p.category === selectedCategory.value);
   }
 
-  // Filter by brand
-  if (selectedBrand.value) {
-    list = list.filter((p) => p.brand === selectedBrand.value);
+  // Filter by brands (multiple selection)
+  if (selectedBrands.value.length > 0) {
+    list = list.filter((p) => selectedBrands.value.includes(p.brand));
   }
 
   // Sort

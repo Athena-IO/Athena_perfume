@@ -83,7 +83,7 @@ def login_view(request):
         max_age=60 * 60 * 24 * 7
     )
 
-    return response
+    return response 
 
 # Protected userinfo
 class UserInfoView(APIView):
@@ -126,7 +126,7 @@ def refresh_view(request):
         return response
 
 # Logout endpoint
-@api_view(['POST'])
+@api_view(['POST']) 
 @permission_classes([permissions.IsAuthenticated])
 def logout_view(request):
     response = Response({"detail": "Logged out successfully"})

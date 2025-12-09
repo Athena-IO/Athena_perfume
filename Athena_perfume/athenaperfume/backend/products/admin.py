@@ -27,8 +27,7 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'brand', 'price', 'stock', 'is_active']
+    list_display = ['name', 'brand', 'gender', 'is_active', 'created_at']
     list_filter = ['brand', 'category', 'gender', 'is_active']
     search_fields = ['name', 'brand__name']
-    prepopulated_fields = {'slug': ('name',)}
-    filter_horizontal = ['tags']  
+    filter_horizontal = ['tags']

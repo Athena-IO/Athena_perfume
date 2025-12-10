@@ -1,5 +1,3 @@
-import { defineStore } from "pinia";
-
 export const useCartStore = defineStore("cart", {
   state: () => ({
     items: [],
@@ -22,22 +20,26 @@ export const useCartStore = defineStore("cart", {
 
   actions: {
     addToCart(product, qty = 1) {
-      // Create unique ID based on product ID and selected volume
-      const uniqueId = `${product.id}-${product.selectedVolume}`;
-
-      const existing = this.items.find((i) => i.uniqueId === uniqueId);
+      // group only by product id
+      const existing = this.items.find((i) => i.productId === product.id);
 
       if (existing) {
+        // increase quantity
         existing.qty += qty;
+        // optionally accumulate volume in some field
+        existing.totalVolume =
+          (existing.totalVolume || existing.selectedVolume || 0) +
+          (product.selectedVolume || 0);
       } else {
         this.items.push({
-          id: uniqueId, // Unique ID for cart item
-          productId: product.id, // Original product ID
-          uniqueId: uniqueId, // For finding items
+          id: product.id, // use product id as cart item id
+          productId: product.id,
           title: product.name,
-          price: product.finalPrice, // قیمت بعد تخفیف
-          originalPrice: product.originalPrice, // قیمت قبل تخفیف
+          price: product.finalPrice,
+          originalPrice: product.originalPrice,
+          // store last selected volume or an accumulated one
           selectedVolume: product.selectedVolume,
+          totalVolume: product.selectedVolume, // can use this for display
           volumeLabel: product.volumeLabel,
           image: product.image,
           qty,

@@ -37,7 +37,7 @@
           <div class="flex-1">
             <h3 class="font-semibold text-sm">{{ item.title }}</h3>
             <p class="text-xs text-gray-500 mt-1">
-              حجم: {{ item.selectedVolume }} میل
+              حجم: {{ item.totalVolume }} میل
             </p>
             <p class="font-bold text-primary mt-2">
               {{ formatPrice(calculateItemTotal(item)) }} تومان
@@ -47,7 +47,8 @@
           <div class="flex flex-col justify-between items-end gap-3">
             <UInputNumber
               v-model="item.qty"
-              :min="1"
+              :min="5"
+              :step="5"
               size="xs"
               class="w-24"
               @update:model-value="updateQuantity(item)"
@@ -112,10 +113,12 @@ const calculateItemTotal = (item) => {
 };
 
 const updateQuantity = (item) => {
-  if (item.qty < 1) {
-    item.qty = 1;
-  }
+  if (item.qty < 5) item.qty = 5;
   // The cart store should handle the update automatically through reactivity
+
+  if (item.selectedVolume) {
+    item.totalVolume = item.qty;
+  }
 };
 
 const clearCart = () => {

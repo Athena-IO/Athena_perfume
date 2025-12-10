@@ -1,9 +1,9 @@
 <template>
-  <div class="p-6">
+  <div class="p-4 sm:p-6">
     <UContainer>
-      <div class="flex flex-col lg:flex-row gap-6">
-        <!-- فیلترها -->
-        <aside class="lg:w-64 shrink-0">
+      <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        <!-- Desktop Filters -->
+        <aside class="hidden lg:block lg:w-64 shrink-0">
           <ProductFilter
             :selectedCategory="selectedCategory"
             :selectedBrands="selectedBrands"
@@ -15,9 +15,50 @@
           />
         </aside>
 
-        <!-- لیست محصولات -->
+        <!-- Main Content -->
         <div class="flex-1">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Mobile Filter Button -->
+          <div class="lg:hidden mb-4">
+            <UDrawer
+              v-model:open="isFilterOpen"
+              direction="left"
+              title="فیلترها"
+            >
+              <UButton
+                label="نمایش فیلترها"
+                icon="i-lucide-filter"
+                color="neutral"
+                variant="outline"
+                block
+              />
+
+              <template #body>
+                <ProductFilter
+                  :selectedCategory="selectedCategory"
+                  :selectedBrands="selectedBrands"
+                  :selectedSort="selectedSort"
+                  :filtered-count="filteredProducts.length"
+                  @update:category="selectedCategory = $event"
+                  @update:brands="selectedBrands = $event"
+                  @update:sort="selectedSort = $event"
+                />
+              </template>
+
+              <template #footer>
+                <UButton
+                  label="نمایش نتایج"
+                  color="primary"
+                  block
+                  @click="isFilterOpen = false"
+                />
+              </template>
+            </UDrawer>
+          </div>
+
+          <!-- Product Grid -->
+          <div
+            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
+          >
             <ProductCard
               v-for="product in filteredProducts"
               :key="product.id"
@@ -25,7 +66,7 @@
             />
           </div>
 
-          <!-- پیام خالی -->
+          <!-- Empty State -->
           <div v-if="filteredProducts.length === 0" class="text-center py-12">
             <UIcon
               name="i-lucide-package-x"
@@ -56,6 +97,9 @@ const props = defineProps({
     default: null,
   },
 });
+
+// Filter drawer state for mobile
+const isFilterOpen = ref(false);
 
 // Initialize with props
 const selectedCategory = ref(props.category);
@@ -93,7 +137,17 @@ const products = ref([
     category: "male",
     brand: "dior",
     badge: { text: "جدید", color: "primary" },
+
+    information: {
+      gender: "مردانه",
+      brand: "Dior",
+      similar: "Bleu de Chanel",
+      type: "Eau de Toilette",
+      season: "چهار فصل (بهترین برای تابستان)",
+      volume: "100ml / 200ml",
+    },
   },
+
   {
     id: 5,
     slug: "chanel-bleu-5",
@@ -106,7 +160,17 @@ const products = ref([
     category: "male",
     brand: "chanel",
     badge: { text: "پرفروش", color: "success" },
+
+    information: {
+      gender: "مردانه",
+      brand: "Chanel",
+      similar: "Dior Sauvage",
+      type: "Eau de Parfum",
+      season: "چهار فصل",
+      volume: "100ml / 150ml",
+    },
   },
+
   {
     id: 6,
     slug: "lancome-la-vie-6",
@@ -120,7 +184,17 @@ const products = ref([
     category: "female",
     brand: "lancome",
     badge: { text: "ویژه", color: "warning" },
+
+    information: {
+      gender: "زنانه",
+      brand: "Lancôme",
+      similar: "Armani Si",
+      type: "Eau de Parfum",
+      season: "پاییز و زمستان",
+      volume: "75ml / 100ml",
+    },
   },
+
   {
     id: 7,
     slug: "versace-eros-7",
@@ -134,7 +208,17 @@ const products = ref([
     category: "male",
     brand: "versace",
     badge: { text: "تخفیف‌دار", color: "error" },
+
+    information: {
+      gender: "مردانه",
+      brand: "Versace",
+      similar: "Invictus by Paco Rabanne",
+      type: "Eau de Toilette",
+      season: "زمستان / پاییز",
+      volume: "100ml / 200ml",
+    },
   },
+
   {
     id: 8,
     slug: "ysl-libre-8",
@@ -148,7 +232,17 @@ const products = ref([
     category: "female",
     brand: "ysl",
     badge: { text: "پیشنهادی", color: "primary" },
+
+    information: {
+      gender: "زنانه",
+      brand: "YSL",
+      similar: "Mon Paris",
+      type: "Eau de Parfum",
+      season: "چهار فصل",
+      volume: "90ml",
+    },
   },
+
   {
     id: 9,
     slug: "creed-aventus-9",
@@ -161,7 +255,17 @@ const products = ref([
     category: "male",
     brand: "creed",
     badge: { text: "پرفروش", color: "success" },
+
+    information: {
+      gender: "مردانه",
+      brand: "Creed",
+      similar: "Mont Blanc Explorer",
+      type: "Eau de Parfum",
+      season: "چهار فصل (بهترین برای بهار)",
+      volume: "100ml / 120ml",
+    },
   },
+
   {
     id: 10,
     slug: "burberry-her-10",
@@ -175,7 +279,17 @@ const products = ref([
     category: "female",
     brand: "burberry",
     badge: { text: "اقتصادی", color: "neutral" },
+
+    information: {
+      gender: "زنانه",
+      brand: "Burberry",
+      similar: "Ariana Grande Cloud",
+      type: "Eau de Parfum",
+      season: "بهار و تابستان",
+      volume: "100ml",
+    },
   },
+
   {
     id: 11,
     slug: "tomford-black-orchid-11",
@@ -189,6 +303,15 @@ const products = ref([
     category: "unisex",
     brand: "tomford",
     badge: { text: "کلاسیک", color: "warning" },
+
+    information: {
+      gender: "یونیسکس",
+      brand: "Tom Ford",
+      similar: "Narciso Rodriguez For Her",
+      type: "Eau de Parfum",
+      season: "پاییز و زمستان",
+      volume: "100ml / 150ml",
+    },
   },
 ]);
 

@@ -22,15 +22,18 @@ export const useCartStore = defineStore("cart", {
 
   actions: {
     addToCart(product, qty = 1) {
-      const existing = this.items.find(
-        (i) =>
-          i.id === product.id && i.selectedVolume === product.selectedVolume
-      );
+      // Create unique ID based on product ID and selected volume
+      const uniqueId = `${product.id}-${product.selectedVolume}`;
+
+      const existing = this.items.find((i) => i.uniqueId === uniqueId);
+
       if (existing) {
         existing.qty += qty;
       } else {
         this.items.push({
-          id: product.id,
+          id: uniqueId, // Unique ID for cart item
+          productId: product.id, // Original product ID
+          uniqueId: uniqueId, // For finding items
           title: product.name,
           price: product.finalPrice, // قیمت بعد تخفیف
           originalPrice: product.originalPrice, // قیمت قبل تخفیف
@@ -44,6 +47,13 @@ export const useCartStore = defineStore("cart", {
 
     removeFromCart(id) {
       this.items = this.items.filter((i) => i.id !== id);
+    },
+
+    updateQuantity(itemId, newQty) {
+      const item = this.items.find((i) => i.id === itemId);
+      if (item && newQty >= 1) {
+        item.qty = newQty;
+      }
     },
 
     clearCart() {

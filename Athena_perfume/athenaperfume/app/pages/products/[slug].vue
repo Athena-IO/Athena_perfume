@@ -1,143 +1,296 @@
 <template>
   <UContainer class="py-6 sm:py-10">
-    <div v-if="product" class="max-w-4xl mx-auto space-y-8">
-      <ProductGallery :images="productImages" />
-
-      <!-- Product Info -->
-      <div class="space-y-6">
-        <!-- Title -->
-        <div class="text-center">
-          <h1
-            class="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white"
-          >
-            {{ product.name }}
-          </h1>
+    <div v-if="product" class="max-w-7xl mx-auto">
+      <!-- Three Column Layout -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- RIGHT: Product Gallery -->
+        <div class="lg:col-span-5 order-1 lg:order-3">
+          <ProductGallery :images="productImages" />
         </div>
 
-        <!-- Price + Discount -->
-        <div class="flex items-center justify-center gap-4">
-          <!-- Final price -->
-          <p class="text-2xl font-bold text-primary">
-            {{ formatPrice(finalPrice) }} تومان
-          </p>
-
-          <!-- Original × qty -->
-          <p v-if="hasDiscount" class="text-gray-400 line-through text-base">
-            {{ formatPrice(originalPriceTotal) }} تومان
-          </p>
-
-          <!-- Discount badge -->
-          <UBadge v-if="hasDiscount" color="error" variant="solid" size="md">
-            {{ product.discountPercent }}٪ تخفیف
-          </UBadge>
-        </div>
-
-        <!-- Rating + Stock -->
-        <div class="flex flex-col items-center gap-2 text-sm mt-4">
-          <div class="flex items-center gap-2">
-            <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
-            <span class="font-bold text-gray-700 dark:text-gray-300">4.5</span>
-            <span class="text-gray-500">(۱۲۴ نظر)</span>
-          </div>
-          <UBadge color="success" variant="soft">✔ موجود در انبار</UBadge>
-        </div>
-
-        <UDivider />
-
-        <!-- Volume Selection -->
-        <div class="w-full text-center">
-          <p class="text-sm font-semibold mb-3">انتخاب حجم:</p>
-
-          <URadioGroup
-            v-model="selectedVolume"
-            :items="volumeOptions"
-            orientation="horizontal"
-            color="primary"
-            variant="card"
-            size="xs"
-            :ui="{
-              fieldset: 'w-full flex justify-center',
-              container: 'flex justify-center gap-3',
-              item: 'w-24',
-              base: 'justify-center',
-              label: 'w-full text-center text-xs',
-            }"
-          />
-        </div>
-
-        <UDivider />
-
-        <!-- Qty + Add to Cart -->
-        <div
-          class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 justify-center"
-        >
-          <!-- Qty (goes right side in RTL) -->
-          <UInputNumber
-            v-model="qty"
-            :min="1"
-            :step="5"
-            size="md"
-            class="w-full sm:w-28 order-1 sm:order-1"
-            :ui="{
-              wrapper:
-                'border border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-between',
-              base: 'text-center font-semibold',
-              increment: 'rounded-none rounded-s-lg',
-              decrement: 'rounded-none rounded-e-lg',
-            }"
-          />
-
-          <!-- Add to Cart -->
-          <UButton
-            class="flex-1 sm:flex-none sm:w-40 order-2 text-center"
-            color="primary"
-            size="md"
-            icon="i-lucide-shopping-cart"
-            @click="addToCart"
-          >
-            افزودن به سبد خرید
-          </UButton>
-        </div>
-
-        <!-- Additional Buttons -->
-        <div class="grid grid-cols-2 gap-3 mt-3 w-full">
-          <UButton block color="gray" variant="outline">ارسال رایگان</UButton>
-          <UButton block color="gray" variant="outline">ضمانت اصالت</UButton>
-        </div>
-
-        <UButton
-          block
-          color="gray"
-          size="md"
-          variant="outline"
-          icon="i-lucide-credit-card"
-          class="mt-3"
-        >
-          خرید اقساطی
-        </UButton>
-
-        <!-- Extra Info -->
-        <UCard>
-          <div class="space-y-3 text-sm">
-            <div class="flex items-start gap-2">
-              <span class="i-lucide-truck text-primary"></span>
+        <!-- MIDDLE: Product Information -->
+        <div class="lg:col-span-4 order-2 lg:order-2 space-y-4">
+          <UCard>
+            <div class="space-y-4">
+              <!-- Title -->
               <div>
-                <p class="font-medium">ارسال رایگان</p>
-                <p class="text-gray-500 text-xs">
-                  برای سفارش‌های بالای ۵۰۰,۰۰۰ تومان
+                <h1
+                  class="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white"
+                >
+                  {{ product.name }}
+                </h1>
+              </div>
+
+              <UDivider />
+
+              <!-- Rating -->
+              <div class="flex items-center justify-between text-sm">
+                <div class="flex items-center gap-2">
+                  <span class="text-yellow-500">⭐⭐⭐⭐⭐</span>
+                  <span class="font-bold text-gray-700 dark:text-gray-300"
+                    >4.5</span
+                  >
+                  <span class="text-gray-500">(۱۲۴ نظر)</span>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Gender -->
+              <div
+                v-if="product.information?.gender"
+                class="flex items-center justify-between text-sm"
+              >
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ product.information.gender }}
                 </p>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-user text-primary"></span>
+                  <p class="font-medium">جنسیت</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Brand -->
+              <div
+                v-if="product.information?.brand"
+                class="flex items-center justify-between text-sm"
+              >
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ product.information.brand }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-tag text-primary"></span>
+                  <p class="font-medium">برند</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Type -->
+              <div
+                v-if="product.information?.type"
+                class="flex items-center justify-between text-sm"
+              >
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ product.information.type }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-droplet text-primary"></span>
+                  <p class="font-medium">نوع</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Season -->
+              <div
+                v-if="product.information?.season"
+                class="flex items-center justify-between text-sm"
+              >
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ product.information.season }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-calendar text-primary"></span>
+                  <p class="font-medium">فصل</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Volume -->
+              <div
+                v-if="product.information?.volume"
+                class="flex items-center justify-between text-sm"
+              >
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ product.information.volume }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-flask-conical text-primary"></span>
+                  <p class="font-medium">حجم</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Similar -->
+              <div
+                v-if="product.information?.similar"
+                class="flex items-center justify-between text-sm"
+              >
+                <p class="text-gray-600 dark:text-gray-400">
+                  {{ product.information.similar }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-sparkles text-primary"></span>
+                  <p class="font-medium">مشابه</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Shipping Info -->
+              <div class="flex items-center justify-between text-sm">
+                <div>
+                  <p class="text-gray-500 text-xs">
+                    برای سفارش‌های بالای ۵۰۰,۰۰۰ تومان
+                  </p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-truck text-primary"></span>
+                  <p class="font-medium">ارسال رایگان</p>
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Warranty -->
+              <div class="flex items-center justify-between text-sm">
+                <div>
+                  <p class="text-gray-500 text-xs">۷ روز ضمانت بازگشت</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="i-lucide-shield-check text-primary"></span>
+                  <p class="font-medium">گارانتی اصالت کالا</p>
+                </div>
               </div>
             </div>
-            <UDivider />
-            <div class="flex items-start gap-2">
-              <span class="i-lucide-shield-check text-primary"></span>
+          </UCard>
+        </div>
+
+        <!-- LEFT: Pricing & Cart Actions -->
+        <div class="lg:col-span-3 order-3 lg:order-1">
+          <UCard :ui="{ body: { padding: 'p-6 sm:p-8' } }">
+            <div class="space-y-6">
+              <!-- Stock & Brand Header -->
+              <div class="flex items-center justify-between gap-2">
+                <UBadge color="success" variant="soft" size="lg">
+                  <span class="flex items-center gap-1">
+                    <span class="i-lucide-check-circle"></span>
+                    موجود در انبار✔
+                  </span>
+                </UBadge>
+
+                <UButton
+                  color="gray"
+                  variant="outline"
+                  size="sm"
+                  square
+                  class="px-4"
+                  @click="navigateToBrand"
+                >
+                  {{ product.brand || "برند" }}
+                </UButton>
+              </div>
+
+              <UDivider />
+
+              <!-- Price Section -->
+              <div class="text-center space-y-3">
+                <p class="text-3xl font-bold text-primary">
+                  {{ formatPrice(finalPrice) }} تومان
+                </p>
+
+                <p
+                  v-if="hasDiscount"
+                  class="text-gray-400 line-through text-base"
+                >
+                  {{ formatPrice(originalPriceTotal) }} تومان
+                </p>
+
+                <UBadge
+                  v-if="hasDiscount"
+                  color="error"
+                  variant="solid"
+                  size="lg"
+                >
+                  {{ product.discountPercent }}٪ تخفیف
+                </UBadge>
+              </div>
+
+              <UDivider />
+
+              <!-- Volume Selection -->
               <div>
-                <p class="font-medium">گارانتی اصالت کالا</p>
-                <p class="text-gray-500 text-xs">۷ روز ضمانت بازگشت</p>
+                <p class="text-base font-semibold mb-3 text-center">
+                  انتخاب حجم:
+                </p>
+                <URadioGroup
+                  v-model="selectedVolume"
+                  :items="volumeOptions"
+                  orientation="vertical"
+                  color="primary"
+                  variant="card"
+                  size="sm"
+                  :ui="{
+                    fieldset: 'w-full',
+                    container: 'flex flex-col gap-3',
+                    item: 'w-full',
+                    base: 'justify-center',
+                    label: 'w-full text-center text-sm',
+                  }"
+                />
+              </div>
+
+              <UDivider />
+
+              <!-- Add to Cart Button (Left) & Quantity (Right) -->
+              <div class="flex items-end gap-3">
+                <!-- Add to Cart Button (Left) -->
+                <UButton
+                  class="flex-1 py-1.5 px-2.5 text-xs"
+                  color="primary"
+                  icon="i-lucide-shopping-cart"
+                  @click="addToCart"
+                >
+                  افزودن به سبد خرید
+                </UButton>
+
+                <!-- Quantity (Right) -->
+                <div class="flex-shrink-0 w-20">
+                  <p class="text-xs font-semibold mb-1 text-center">تعداد:</p>
+                  <UInputNumber
+                    v-model="qty"
+                    :min="1"
+                    :step="1"
+                    size="sm"
+                    :ui="{
+                      wrapper:
+                        'border border-gray-300 dark:border-gray-700 rounded-lg flex items-center justify-between',
+                      base: 'text-center font-semibold text-xs',
+                      increment: 'rounded-none rounded-s-lg',
+                      decrement: 'rounded-none rounded-e-lg',
+                    }"
+                  />
+                </div>
+              </div>
+
+              <UDivider />
+
+              <!-- Additional Actions -->
+              <div class="space-y-3">
+                <UButton block color="gray" variant="outline" size="md">
+                  ارسال رایگان
+                </UButton>
+                <UButton block color="gray" variant="outline" size="md">
+                  ضمانت اصالت
+                </UButton>
+                <UButton
+                  block
+                  color="gray"
+                  variant="outline"
+                  size="md"
+                  icon="i-lucide-credit-card"
+                >
+                  خرید اقساطی
+                </UButton>
               </div>
             </div>
-          </div>
-        </UCard>
+          </UCard>
+        </div>
       </div>
     </div>
 
@@ -163,9 +316,9 @@ const cart = useCartStore();
 
 // حجم‌ها
 const volumeOptions = [
-  { label: "۳ میل", value: 3 },
-  { label: "۶ میل", value: 6 },
-  { label: "۱۲ میل", value: 12 },
+  { label: "۵ میل", value: 5 },
+  { label: "۱۵ میل", value: 15 },
+  { label: "۲۵ میل", value: 25 },
   { label: "۱۰۰ میل", value: 100 },
 ];
 
@@ -188,6 +341,14 @@ const products = [
     discountPercent: 10,
     image:
       "https://liliome.com/wp-content/uploads/2016/04/Dior-Sauvage-1.jpg?v=1680545729",
+    information: {
+      gender: "مردانه",
+      brand: "Dior",
+      similar: "Bleu de Chanel",
+      type: "Eau de Toilette",
+      season: "چهار فصل (بهترین برای تابستان)",
+      volume: "100ml / 200ml",
+    },
   },
   {
     id: 5,
@@ -196,6 +357,14 @@ const products = [
     originalPrice: 3200000,
     discountPercent: 15,
     image: "https://liliome.ir/wp-content/uploads/2015/12/6-1.jpg",
+    information: {
+      gender: "مردانه",
+      brand: "Chanel",
+      similar: "Dior Sauvage",
+      type: "Eau de Parfum",
+      season: "چهار فصل",
+      volume: "100ml / 150ml",
+    },
   },
   {
     id: 6,
@@ -205,6 +374,14 @@ const products = [
     discountPercent: 8,
     image:
       "https://hamedsps.ir/wp-content/uploads/2023/04/%D9%84%D9%88%DB%8C%D9%87-%D8%A8%D9%84.jpg",
+    information: {
+      gender: "زنانه",
+      brand: "Lancôme",
+      similar: "Armani Si",
+      type: "Eau de Parfum",
+      season: "پاییز و زمستان",
+      volume: "75ml / 100ml",
+    },
   },
   {
     id: 7,
@@ -214,6 +391,14 @@ const products = [
     discountPercent: 12,
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYNzQWBYJkEtxw5kCcSyHGKnEVOugmqPf2qg&s",
+    information: {
+      gender: "مردانه",
+      brand: "Versace",
+      similar: "Invictus by Paco Rabanne",
+      type: "Eau de Toilette",
+      season: "زمستان / پاییز",
+      volume: "100ml / 200ml",
+    },
   },
   {
     id: 8,
@@ -223,6 +408,14 @@ const products = [
     discountPercent: 5,
     image:
       "https://liliome.com/wp-content/uploads/2019/08/Yves-Saint-Laurent-Libre-1.jpg",
+    information: {
+      gender: "زنانه",
+      brand: "YSL",
+      similar: "Mon Paris",
+      type: "Eau de Parfum",
+      season: "چهار فصل",
+      volume: "90ml",
+    },
   },
   {
     id: 9,
@@ -231,6 +424,15 @@ const products = [
     originalPrice: 2850000,
     discountPercent: 18,
     image: "https://liliome.ir/wp-content/uploads/2016/12/3-76.jpg",
+
+    information: {
+      gender: "مردانه",
+      brand: "Creed",
+      similar: "Mont Blanc Explorer",
+      type: "Eau de Parfum",
+      season: "چهار فصل (بهترین برای بهار)",
+      volume: "100ml / 120ml",
+    },
   },
   {
     id: 10,
@@ -240,6 +442,14 @@ const products = [
     discountPercent: 7,
     image:
       "https://www.roha-shop.com/wp-content/uploads/2022/08/%D8%A8%D8%A7%D8%B1%D8%A8%D8%B1%DB%8C-%D9%87%D8%B1-01.jpg",
+    information: {
+      gender: "زنانه",
+      brand: "Burberry",
+      similar: "Ariana Grande Cloud",
+      type: "Eau de Parfum",
+      season: "بهار و تابستان",
+      volume: "100ml",
+    },
   },
   {
     id: 11,
@@ -249,6 +459,14 @@ const products = [
     discountPercent: 9,
     image:
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE-LsGMChiT5p8uw2tsRiBoO29qJotnXihyg&s",
+    information: {
+      gender: "یونیسکس",
+      brand: "Tom Ford",
+      similar: "Narciso Rodriguez For Her",
+      type: "Eau de Parfum",
+      season: "پاییز و زمستان",
+      volume: "100ml / 150ml",
+    },
   },
 ];
 

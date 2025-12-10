@@ -48,7 +48,7 @@
         <!-- دکمه‌ها -->
         <div class="flex flex-wrap gap-5 mt-6 pr-0 lg:pr-14">
           <UButton
-            to="/products?gender=male"
+            to="/category/male"
             color="primary"
             variant="solid"
             size="xl"
@@ -58,7 +58,7 @@
           </UButton>
 
           <UButton
-            to="/products?gender=female"
+            to="/category/female"
             color="primary"
             variant="outline"
             size="xl"
@@ -82,7 +82,7 @@
       class="grid lg:grid-cols-2 grid-cols-1 gap-6 items-center min-h-[30vh]"
     >
       <!-- Box 1 - مردانه -->
-      <ULink to="/men-products" class="group block h-full" raw>
+      <ULink to="/category/male" class="group block h-full" raw>
         <UCard
           class="relative overflow-hidden h-full transition-all duration-300 group-hover:shadow-xl border-default"
         >
@@ -112,7 +112,7 @@
       </ULink>
 
       <!-- Box 2 - زنانه -->
-      <ULink to="/women-products" class="group block h-full" raw>
+      <ULink to="/category/female" class="group block h-full" raw>
         <UCard
           class="relative overflow-hidden h-full transition-all duration-300 group-hover:shadow-xl border-default"
         >

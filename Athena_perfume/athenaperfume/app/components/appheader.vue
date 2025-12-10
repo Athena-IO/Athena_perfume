@@ -8,15 +8,16 @@
       </NuxtLink>
     </template>
 
-    <!-- منوی اصلی -->
-    <UNavigationMenu :items="navItems" />
+    <!-- منوی اصلی - فقط در دسکتاپ -->
+    <UNavigationMenu :items="navItems" class="hidden lg:flex" />
 
-    <!-- سمت راست: تم + کاربر + سبد خرید -->
+    <!-- سمت راست: تم + کاربر + سبد خرید - فقط دسکتاپ -->
     <template #right>
-      <UColorModeButton />
+      <!-- دکمه تم - فقط در دسکتاپ -->
+      <UColorModeButton class="hidden lg:flex" />
 
-      <!-- بخش احراز هویت کاربر -->
-      <div v-if="isAuthenticated">
+      <!-- بخش احراز هویت کاربر - فقط دسکتاپ -->
+      <div v-if="isAuthenticated" class="hidden lg:block">
         <UDropdownMenu :items="userMenuItems">
           <UButton
             color="neutral"
@@ -28,8 +29,8 @@
         </UDropdownMenu>
       </div>
 
-      <!-- دکمه ورود برای کاربران غیر لاگین -->
-      <div v-else>
+      <!-- دکمه ورود برای کاربران غیر لاگین - فقط دسکتاپ -->
+      <div v-else class="hidden lg:block">
         <UButton
           color="primary"
           variant="soft"
@@ -40,8 +41,8 @@
         />
       </div>
 
-      <!-- دکمه سبد خرید با تعداد آیتم -->
-      <div class="relative">
+      <!-- دکمه سبد خرید با تعداد آیتم - فقط دسکتاپ -->
+      <div class="relative hidden lg:block">
         <UButton
           color="neutral"
           variant="ghost"
@@ -61,6 +62,66 @@
             {{ totalItems }}
           </div>
         </transition>
+      </div>
+    </template>
+
+    <!-- محتوای منوی موبایل -->
+    <template #body>
+      <!-- منوی اصلی به صورت عمودی -->
+      <UNavigationMenu
+        :items="navItems"
+        orientation="vertical"
+        class="-mx-2.5 mb-4"
+      />
+
+      <!-- فاصله‌انداز -->
+      <UDivider class="my-4" />
+
+      <!-- بخش کاربر در موبایل -->
+      <div v-if="isAuthenticated" class="space-y-2">
+        <div class="px-2.5 py-2 text-sm font-medium text-muted">
+          {{ user?.fullName || "کاربر" }}
+        </div>
+        <UNavigationMenu
+          :items="mobileUserMenuItems"
+          orientation="vertical"
+          class="-mx-2.5"
+        />
+      </div>
+
+      <!-- دکمه ورود در موبایل برای کاربران غیر لاگین -->
+      <div v-else class="px-2.5">
+        <UButton
+          color="primary"
+          variant="soft"
+          size="md"
+          label="ورود / ثبت‌نام"
+          icon="i-lucide-log-in"
+          to="/login"
+          block
+        />
+      </div>
+
+      <!-- فاصله‌انداز -->
+      <UDivider class="my-4" />
+
+      <!-- دکمه سبد خرید در موبایل -->
+      <div class="px-2.5">
+        <UButton
+          color="neutral"
+          variant="outline"
+          size="md"
+          icon="i-lucide-shopping-cart"
+          block
+          @click="cartOpen = true"
+        >
+          <span class="flex items-center gap-2">
+            <span>سبد خرید</span>
+            <UBadge v-if="totalItems > 0" color="primary" size="xs">
+              {{ totalItems }}
+            </UBadge>
+          </span>
+        </UButton>
       </div>
     </template>
   </UHeader>
@@ -84,7 +145,7 @@ const totalItems = computed(() => {
   return cartStore.items.length;
 });
 
-// منوی کاربر
+// منوی کاربر برای دسکتاپ (DropdownMenu)
 const userMenuItems = computed(() => {
   const items = [
     [
@@ -113,7 +174,6 @@ const userMenuItems = computed(() => {
     ],
   ];
 
-  // اگر ادمین است، منوی پنل ادمین اضافه شود
   if (isAdmin.value) {
     items.push([
       {
@@ -125,7 +185,6 @@ const userMenuItems = computed(() => {
     ]);
   }
 
-  // دکمه خروج
   items.push([
     {
       label: "خروج از حساب",
@@ -136,6 +195,43 @@ const userMenuItems = computed(() => {
       },
     },
   ]);
+
+  return items;
+});
+
+// منوی کاربر برای موبایل (NavigationMenu)
+const mobileUserMenuItems = computed(() => {
+  const items = [
+    {
+      label: "پروفایل",
+      icon: "i-lucide-user-circle",
+      to: "/profile",
+    },
+    {
+      label: "سفارش‌های من",
+      icon: "i-lucide-shopping-bag",
+      to: "/orders",
+    },
+    {
+      label: "تنظیمات",
+      icon: "i-lucide-settings",
+      to: "/settings",
+    },
+  ];
+
+  if (isAdmin.value) {
+    items.push({
+      label: "پنل مدیریت",
+      icon: "i-lucide-shield",
+      to: "/admin",
+    });
+  }
+
+  items.push({
+    label: "خروج از حساب",
+    icon: "i-lucide-log-out",
+    click: () => logout(),
+  });
 
   return items;
 });

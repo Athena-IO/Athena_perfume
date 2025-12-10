@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from .models import Brand, Category, TagGroup, Tag, Product
-
+from .models import PricingRule
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
@@ -31,3 +31,10 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ['brand', 'category', 'gender', 'is_active']
     search_fields = ['name', 'brand__name']
     filter_horizontal = ['tags']
+
+
+@admin.register(PricingRule)
+class PricingRuleAdmin(admin.ModelAdmin):
+    list_display = ['product', 'min_quantity', 'max_quantity', 'price_per_unit']
+    list_filter = ['product__brand', 'product__name']
+    search_fields = ['product__name']

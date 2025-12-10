@@ -76,3 +76,23 @@ class Product(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.brand}"
+    
+
+class PricingRule(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='pricing_rules')
+    min_quantity = models.PositiveIntegerField(help_text="از این تعداد به بالا")
+    max_quantity = models.PositiveIntegerField(
+        null=True, blank=True, help_text="تا این تعداد (خالی = بدون سقف)"
+    )
+    price_per_unit = models.DecimalField(
+        max_digits=12, decimal_places=0, help_text="قیمت هر عدد در این بازه (تومان)"
+    )
+
+    class Meta:
+        ordering = ['min_quantity']
+        unique_together = ('product', 'min_quantity')
+
+    def __str__(self):
+        if self.max_quantity:
+            return f"{self.product.name} | {self.min_quantity}–{self.max_quantity} تایی → {self.price_per_unit:,} تومان"
+        return f"{self.product.name} | {self.min_quantity} تایی به بالا → {self.price_per_unit:,} تومان"

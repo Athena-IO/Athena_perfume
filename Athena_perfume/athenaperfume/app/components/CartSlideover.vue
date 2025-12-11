@@ -36,9 +36,9 @@
           />
           <div class="flex-1">
             <h3 class="font-semibold text-sm">{{ item.title }}</h3>
-            <p class="text-xs text-gray-500 mt-1">
-              حجم: {{ item.totalVolume }} میل
-            </p>
+<p class="text-xs text-gray-500 mt-1">
+  حجم: {{ item.qty }} میل
+</p>
             <p class="font-bold text-primary mt-2">
               {{ formatPrice(calculateItemTotal(item)) }} تومان
             </p>
@@ -51,6 +51,7 @@
               :step="5"
               size="xs"
               class="w-24"
+              :max="Number(item.capacity) || undefined"  
               @update:model-value="updateQuantity(item)"
             />
             <UButton
@@ -69,7 +70,7 @@
     <template #footer v-if="cart.items.length">
       <div class="w-full px-4 space-y-4 border-t pt-6">
         <!-- Total -->
-        <div class="flex justify-between text-lg font-bold">
+        <div class="flex justify بین text-lg font-bold">
           <span>جمع کل:</span>
           <span class="text-primary"
             >{{ formatPrice(cart.totalPrice) }} تومان</span
@@ -96,6 +97,7 @@
 
 <script setup>
 import { useCartStore } from "~/composables/stores/cart";
+
 const isOpen = defineModel("open", { default: false });
 const cart = useCartStore();
 const toast = useToast();
@@ -113,9 +115,23 @@ const calculateItemTotal = (item) => {
 };
 
 const updateQuantity = (item) => {
+  // حداقل بر اساس step شما
   if (item.qty < 5) item.qty = 5;
-  // The cart store should handle the update automatically through reactivity
 
+  const capacity = Number(item.capacity) || 0;
+
+  if (capacity > 0 && item.qty > capacity) {
+    // اگر از ظرفیت بیشتر شد → برگشت به capacity و نمایش ارور
+    item.qty = capacity;
+
+    toast.add({
+      title: "ظرفیت کافی نیست",
+      description: `برای محصول «${item.title}» حداکثر ${capacity} عدد می‌توانید داشته باشید.`,
+      color: "error",
+    });
+  }
+
+  // اگر حجم بر اساس تعداد نمایش داده می‌شود
   if (item.selectedVolume) {
     item.totalVolume = item.qty;
   }

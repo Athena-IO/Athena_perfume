@@ -6,8 +6,7 @@ export const useCartStore = defineStore("cart", {
   persist: true,
 
   getters: {
-    totalItems: (state) =>
-      state.items.length,
+    totalItems: (state) => state.items.length,
 
     total: (state) =>
       state.items.reduce((sum, item) => {
@@ -20,28 +19,26 @@ export const useCartStore = defineStore("cart", {
 
   actions: {
     addToCart(product, qty = 1) {
-      // group only by product id
       const existing = this.items.find((i) => i.productId === product.id);
 
       if (existing) {
-        // increase quantity
         existing.qty += qty;
-        // optionally accumulate volume in some field
         existing.totalVolume =
           (existing.totalVolume || existing.selectedVolume || 0) +
           (product.selectedVolume || 0);
       } else {
         this.items.push({
-          id: product.id, // use product id as cart item id
+          id: product.id,
           productId: product.id,
           title: product.name,
           price: product.finalPrice,
           originalPrice: product.originalPrice,
-          // store last selected volume or an accumulated one
           selectedVolume: product.selectedVolume,
-          totalVolume: product.selectedVolume, // can use this for display
+          totalVolume: product.selectedVolume,
           image: product.image,
           qty,
+          // ✅ ظرفیت محصول را هم نگه می‌داریم
+          capacity: product.capacity,
         });
       }
     },

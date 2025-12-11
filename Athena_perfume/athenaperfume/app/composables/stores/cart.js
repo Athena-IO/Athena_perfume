@@ -7,7 +7,7 @@ export const useCartStore = defineStore("cart", {
 
   getters: {
     totalItems: (state) =>
-      state.items.reduce((sum, i) => sum + (i.qty || 0), 0),
+      state.items.length,
 
     total: (state) =>
       state.items.reduce((sum, item) => {
@@ -40,7 +40,6 @@ export const useCartStore = defineStore("cart", {
           // store last selected volume or an accumulated one
           selectedVolume: product.selectedVolume,
           totalVolume: product.selectedVolume, // can use this for display
-          volumeLabel: product.volumeLabel,
           image: product.image,
           qty,
         });

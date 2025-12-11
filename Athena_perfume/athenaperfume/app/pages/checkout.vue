@@ -54,9 +54,8 @@
                     {{ item.title }}
                   </h3>
                   <div class="flex items-center gap-2 text-xs text-gray-500">
-                    <span>حجم: {{ item.volumeLabel }}</span>
                     <span>•</span>
-                    <span>تعداد: {{ item.qty }}</span>
+                    <span>حجم: {{ item.qty }} میلی لیتر</span>
                   </div>
 
                   <!-- Price -->

@@ -1,0 +1,111 @@
+Here’s a simple, practical flow you can follow in Nuxt 3 to:
+
+- fetch all perfumes **in one composable**,  
+- reuse that composable in any page,  
+- and avoid unnecessary refetches with Nuxt’s built‑in caching.
+
+---
+
+## 1. Create a server API to get all perfumes
+
+First, make a Nuxt server route that reads from your DB and returns all perfumes.
+
+`server/api/perfumes.get.ts`:
+
+```ts
+export default defineEventHandler(async (event) => {
+  // Example only – here you query your DB
+  // const perfumes = await db.perfume.findMany()
+
+  // return perfumes
+
+  // Since your DB code is not in the sources you gave me,
+  // I can’t show the exact implementation, just this pattern.
+  return []
+})
+```
+
+This is the only place that directly talks to your DB.
+
+---
+
+## 2. Create a composable that fetches all perfumes
+
+Composables are perfect to centralize data fetching logic. Nuxt recommends `useFetch` / `useAsyncData` inside setup/composables because they handle SSR + payload + no double requests.[[Which to use](https://stackoverflow.com/questions/76839341)][[useFetch vs useAsyncData](https://stackoverflow.com/questions/76839341)]
+
+`composables/usePerfumes.ts`:
+
+```ts
+export const usePerfumes = () => {
+  // Key "perfumes" is the cache key. Same key = shared cached data.
+  const { data, pending, error, refresh } = useFetch('/api/perfumes', {
+    // Optional: make sure it only runs once per client unless you refresh
+    // getCachedData: key => {
+    //   const nuxtApp = useNuxtApp()
+    //   return nuxtApp.payload.data[key] || nuxtApp.payload.static[key]
+    // }
+  })
+
+  return {
+    perfumes: data,  // Ref with your perfumes array
+    pending,
+    error,
+    refresh,         // call refresh() if you need to re-fetch
+  }
+}
+```
+
+Notes:
+
+- `useFetch` here is just a shortcut of `useAsyncData + $fetch` and will avoid duplicate fetches by using Nuxt’s payload/caching.[[Which to use](https://stackoverflow.com/questions/76839341)]
+- In Nuxt 3.8+, you can use `getCachedData` to control client‑side caching further (e.g. fetch once and never again until hard reload).[[Nuxt 3.8 getCachedData](https://www.youtube.com/watch?v=aQPR0xn-MMk)]
+
+---
+
+## 3. Use the composable in any page/component
+
+Now you can use `usePerfumes()` anywhere (pages, components) without repeating logic.
+
+Example page:
+
+```vue
+<script setup lang="ts">
+const { perfumes, pending, error, refresh } = usePerfumes()
+</script>
+
+<template>
+  <div>
+    <button @click="refresh">بروزرسانی</button>
+
+    <div v-if="pending">در حال بارگذاری...</div>
+    <div v-else-if="error">خطا در دریافت عطرها</div>
+    <div v-else>
+      <div v-for="perfume in perfumes" :key="perfume.id">
+        {{ perfume.name }} - {{ perfume.brand }}
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+Because `useFetch/useAsyncData` cache by key, navigating around your app and coming back to this page will typically **reuse the cached `perfumes`** instead of calling the API again, unless you call `refresh()` or change parameters.[[fix getCachedData](https://github.com/nuxt/nuxt/pull/32762)]
+
+---
+
+## 4. Flow summary (step‑by‑step)
+
+1. **Server side** (Nitro):
+   - `server/api/perfumes.get.ts` → query DB → return list.
+
+2. **Shared logic** (composable):
+   - `composables/usePerfumes.ts` → uses `useFetch('/api/perfumes')` → returns `perfumes`, `pending`, `error`, `refresh`.
+
+3. **Pages/components**:
+   - Call `usePerfumes()` in any page that needs the list.
+   - Nuxt will:
+     - fetch on server for SSR,
+     - send data in payload to client,
+     - avoid refetching on hydration,
+     - reuse cached result on client until you `refresh()` or change key/options.[[Which to use](https://stackoverflow.com/questions/76839341)][[custom cache support](https://github.com/nuxt/nuxt/pull/20747)]
+
+If you tell me your DB client (Prisma/Mongoose/etc.) and your perfume schema, I can adapt `server/api/perfumes.get.ts` more concretely to your setup.

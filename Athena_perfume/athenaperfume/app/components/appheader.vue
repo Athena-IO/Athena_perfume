@@ -1,6 +1,6 @@
 <template>
   <UHeader>
-    <!-- لوگو -->
+    <!-- Logo -->
     <template #title>
       <NuxtLink to="/" class="font-black text-xl flex items-center gap-3">
         <UIcon name="i-lucide-droplet" class="w-7 h-7 text-primary" />
@@ -8,28 +8,104 @@
       </NuxtLink>
     </template>
 
-    <!-- منوی اصلی - فقط در دسکتاپ -->
+    <!-- Main nav - desktop -->
     <UNavigationMenu :items="navItems" class="hidden lg:flex" />
 
-    <!-- سمت راست: تم + کاربر + سبد خرید - فقط دسکتاپ -->
+    <!-- Right side: search + theme + user + cart - desktop -->
     <template #right>
-      <!-- دکمه تم - فقط در دسکتاپ -->
+      <!-- Search button + popover (desktop) -->
+      <div class="hidden lg:flex items-center gap-2">
+        <UPopover 
+          v-model:open="searchOpen" 
+          :content="{ 
+            align: 'end',
+            side: 'bottom',
+            sideOffset: 12
+          }"
+          :ui="{
+            content: 'w-screen max-w-3xl'
+          }"
+        >
+          <UButton
+            icon="i-lucide-search"
+            color="neutral"
+            variant="ghost"
+          />
+
+          <template #content>
+            <div class="p-4">
+              <div class="flex items-center gap-2 mb-3">
+                <UInput
+                  v-model="search"
+                  icon="i-lucide-search"
+                  placeholder="Search perfumes..."
+                  class="flex-1"
+                  autofocus
+                />
+                <UButton
+                  icon="i-lucide-x"
+                  color="neutral"
+                  variant="ghost"
+                  @click="closeSearch"
+                />
+              </div>
+
+              <div v-if="searchPending" class="text-sm text-muted">
+                Searching...
+              </div>
+              <div v-else-if="searchError" class="flex flex-col items-center justify-center py-8 text-center">
+                <UIcon name="i-lucide-search-x" class="w-12 h-12 text-muted mb-3" />
+                <p class="text-sm font-medium text-muted">نتیجه‌ای یافت نشد</p>
+                <p class="text-xs text-muted mt-1">لطفاً عبارت دیگری را جستجو کنید</p>
+              </div>
+              <div v-else>
+                <div
+                  v-if="!searchResults.length && search.length > 2"
+                  class="flex flex-col items-center justify-center py-8 text-center"
+                >
+                  <UIcon name="i-lucide-search-x" class="w-12 h-12 text-muted mb-3" />
+                  <p class="text-sm font-medium text-muted">نتیجه‌ای یافت نشد</p>
+                  <p class="text-xs text-muted mt-1">لطفاً عبارت دیگری را جستجو کنید</p>
+                </div>
+
+                <div v-else class="space-y-1 max-h-96 overflow-auto">
+                  <NuxtLink
+                    v-for="item in searchResults"
+                    :key="item.id"
+                    :to="`/products/${item.slug}`"
+                    class="flex items-center justify-between px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                    @click="closeSearch"
+                  >
+                    <span>{{ item.title }}</span>
+                    <UIcon
+                      name="i-lucide-arrow-right"
+                      class="w-4 h-4 text-muted"
+                    />
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+          </template>
+        </UPopover>
+      </div>
+
+      <!-- Theme button - desktop -->
       <UColorModeButton class="hidden lg:flex" />
 
-      <!-- بخش احراز هویت کاربر - فقط دسکتاپ -->
+      <!-- User auth - desktop -->
       <div v-if="isAuthenticated" class="hidden lg:block">
         <UDropdownMenu :items="userMenuItems">
           <UButton
             color="neutral"
             variant="ghost"
             size="md"
-            :label="user?.fullName || 'کاربر'"
+            :label="user && user.fullName ? user.fullName : 'کاربر'"
             icon="i-lucide-user"
           />
         </UDropdownMenu>
       </div>
 
-      <!-- دکمه ورود برای کاربران غیر لاگین - فقط دسکتاپ -->
+      <!-- Login button - desktop -->
       <div v-else class="hidden lg:block">
         <UButton
           color="primary"
@@ -41,7 +117,7 @@
         />
       </div>
 
-      <!-- دکمه سبد خرید با تعداد آیتم - فقط دسکتاپ -->
+      <!-- Cart button - desktop -->
       <div class="relative hidden lg:block">
         <UButton
           color="neutral"
@@ -53,7 +129,6 @@
           @click="cartOpen = true"
         />
 
-        <!-- تعداد آیتم‌ها روی دکمه -->
         <transition name="fade">
           <div
             v-if="totalItems > 0"
@@ -65,22 +140,100 @@
       </div>
     </template>
 
-    <!-- محتوای منوی موبایل -->
+    <!-- Mobile body -->
     <template #body>
-      <!-- منوی اصلی به صورت عمودی -->
+      <!-- Search in mobile -->
+      <div class="px-2.5 mb-3">
+        <UPopover 
+          v-model:open="searchOpen"
+          :content="{
+            side: 'bottom',
+            align: 'start',
+            sideOffset: 8
+          }"
+          :ui="{
+            content: 'w-[calc(100vw-2rem)]'
+          }"
+        >
+          <UButton
+            block
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-search"
+          >
+            Search
+          </UButton>
+
+          <template #content>
+            <div class="p-3 max-h-80 overflow-auto">
+              <div class="flex items-center gap-2 mb-3">
+                <UInput
+                  v-model="search"
+                  icon="i-lucide-search"
+                  placeholder="Search perfumes..."
+                  class="flex-1"
+                  autofocus
+                />
+                <UButton
+                  icon="i-lucide-x"
+                  color="neutral"
+                  variant="ghost"
+                  @click="closeSearch"
+                />
+              </div>
+
+              <div v-if="searchPending" class="text-sm text-muted">
+                Searching...
+              </div>
+              <div v-else-if="searchError" class="flex flex-col items-center justify-center py-6 text-center">
+                <UIcon name="i-lucide-search-x" class="w-10 h-10 text-muted mb-2" />
+                <p class="text-sm font-medium text-muted">نتیجه‌ای یافت نشد</p>
+                <p class="text-xs text-muted mt-1">لطفاً عبارت دیگری را جستجو کنید</p>
+              </div>
+              <div v-else>
+                <div
+                  v-if="!searchResults.length && search.length > 2"
+                  class="flex flex-col items-center justify-center py-6 text-center"
+                >
+                  <UIcon name="i-lucide-search-x" class="w-10 h-10 text-muted mb-2" />
+                  <p class="text-sm font-medium text-muted">نتیجه‌ای یافت نشد</p>
+                  <p class="text-xs text-muted mt-1">لطفاً عبارت دیگری را جستجو کنید</p>
+                </div>
+
+                <div v-else class="space-y-1 max-h-60 overflow-auto">
+                  <NuxtLink
+                    v-for="item in searchResults"
+                    :key="item.id"
+                    :to="`/products/${item.slug}`"
+                    class="flex items-center justify-between px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
+                    @click="closeSearch"
+                  >
+                    <span>{{ item.title }}</span>
+                    <UIcon
+                      name="i-lucide-arrow-right"
+                      class="w-4 h-4 text-muted"
+                    />
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+          </template>
+        </UPopover>
+      </div>
+
+      <!-- Main nav - mobile -->
       <UNavigationMenu
         :items="navItems"
         orientation="vertical"
         class="-mx-2.5 mb-4"
       />
 
-      <!-- فاصله‌انداز -->
       <UDivider class="my-4" />
 
-      <!-- بخش کاربر در موبایل -->
+      <!-- User in mobile -->
       <div v-if="isAuthenticated" class="space-y-2">
         <div class="px-2.5 py-2 text-sm font-medium text-muted">
-          {{ user?.fullName || "کاربر" }}
+          {{ user && user.fullName ? user.fullName : "کاربر" }}
         </div>
         <UNavigationMenu
           :items="mobileUserMenuItems"
@@ -89,7 +242,7 @@
         />
       </div>
 
-      <!-- دکمه ورود در موبایل برای کاربران غیر لاگین -->
+      <!-- Login in mobile -->
       <div v-else class="px-2.5">
         <UButton
           color="primary"
@@ -102,10 +255,9 @@
         />
       </div>
 
-      <!-- فاصله‌انداز -->
       <UDivider class="my-4" />
 
-      <!-- دکمه سبد خرید در موبایل -->
+      <!-- Cart in mobile -->
       <div class="px-2.5">
         <UButton
           color="neutral"
@@ -126,31 +278,49 @@
     </template>
   </UHeader>
 
-  <!-- دراور سبد خرید -->
+  <!-- Cart drawer -->
   <CartSlideover v-model:open="cartOpen" />
 </template>
+
 
 <script setup>
 import { useCartStore } from "~/composables/stores/cart";
 import { useAuth } from "~/composables/useAuth";
+import { useSearch } from "~/composables/useSearch";
 
 const cartStore = useCartStore();
 const cartOpen = ref(false);
 
-// احراز هویت
+// Auth
 const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
-// تعداد کل آیتم‌ها (با چک امن)
-const totalItems = computed(() => {
-  return cartStore.items.length;
-});
+// Cart count
+const totalItems = computed(() => cartStore.items.length);
 
-// منوی کاربر برای دسکتاپ (DropdownMenu)
+// Search state
+const searchOpen = ref(false);
+const search = ref("");
+
+// Composable using useFetch with reactive query and watch.[useFetch watch](https://stackoverflow.com/questions/78633662)
+const {
+  results: searchResults,
+  pending: searchPending,
+  error: searchError,
+} = useSearch(search);
+
+const closeSearch = () => {
+  searchOpen.value = false;
+  search.value = "";
+};
+
+// User menu (desktop)
 const userMenuItems = computed(() => {
   const items = [
     [
       {
-        label: user.value?.fullName || "کاربر",
+        label: user && user.value && user.value.fullName
+          ? user.value.fullName
+          : "کاربر",
         icon: "i-lucide-user",
         type: "label",
       },
@@ -199,7 +369,7 @@ const userMenuItems = computed(() => {
   return items;
 });
 
-// منوی کاربر برای موبایل (NavigationMenu)
+// User menu (mobile)
 const mobileUserMenuItems = computed(() => {
   const items = [
     {
@@ -236,7 +406,7 @@ const mobileUserMenuItems = computed(() => {
   return items;
 });
 
-// منوی اصلی
+// Main nav
 const navItems = [
   { label: "تخفیف‌ها", to: "/category/discounts" },
   { label: "عطر مردانه", to: "/category/male" },
@@ -248,11 +418,11 @@ const navItems = [
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: all 0.2s ease;
+  transition: opacity 0.2s ease;
 }
+
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
 }
 </style>

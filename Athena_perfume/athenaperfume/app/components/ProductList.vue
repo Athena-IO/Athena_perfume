@@ -130,6 +130,7 @@ const products = ref([
     name: "دیور ساواج",
     price: 2500000,
     discountPercent: 10,
+    capacity: 250,
     rating: 4.5,
     reviews: 128,
     image:
@@ -137,7 +138,6 @@ const products = ref([
     category: "male",
     brand: "dior",
     badge: { text: "جدید", color: "primary" },
-
     information: {
       gender: "مردانه",
       brand: "Dior",
@@ -154,13 +154,13 @@ const products = ref([
     name: "شنل بلو د شنل",
     price: 3200000,
     discountPercent: 15,
+    capacity: 80,
     rating: 4.7,
     reviews: 210,
     image: "https://liliome.ir/wp-content/uploads/2015/12/6-1.jpg",
     category: "male",
     brand: "chanel",
     badge: { text: "پرفروش", color: "success" },
-
     information: {
       gender: "مردانه",
       brand: "Chanel",
@@ -177,6 +177,7 @@ const products = ref([
     name: "لانکوم لا ویه است بله",
     price: 1980000,
     discountPercent: 8,
+    capacity: 0,
     rating: 4.2,
     reviews: 74,
     image:
@@ -184,7 +185,6 @@ const products = ref([
     category: "female",
     brand: "lancome",
     badge: { text: "ویژه", color: "warning" },
-
     information: {
       gender: "زنانه",
       brand: "Lancôme",
@@ -201,6 +201,7 @@ const products = ref([
     name: "ورساچه اروس",
     price: 2600000,
     discountPercent: 12,
+    capacity: 150,
     rating: 4.3,
     reviews: 91,
     image:
@@ -208,7 +209,6 @@ const products = ref([
     category: "male",
     brand: "versace",
     badge: { text: "تخفیف‌دار", color: "error" },
-
     information: {
       gender: "مردانه",
       brand: "Versace",
@@ -225,6 +225,7 @@ const products = ref([
     name: "ایو سن لورن لیبره",
     price: 3000000,
     discountPercent: 5,
+    capacity: 60,
     rating: 4.6,
     reviews: 52,
     image:
@@ -232,7 +233,6 @@ const products = ref([
     category: "female",
     brand: "ysl",
     badge: { text: "پیشنهادی", color: "primary" },
-
     information: {
       gender: "زنانه",
       brand: "YSL",
@@ -249,13 +249,13 @@ const products = ref([
     name: "کرید اونتوس",
     price: 2850000,
     discountPercent: 18,
+    capacity: 300,
     rating: 4.8,
     reviews: 184,
     image: "https://liliome.ir/wp-content/uploads/2016/12/3-76.jpg",
     category: "male",
     brand: "creed",
     badge: { text: "پرفروش", color: "success" },
-
     information: {
       gender: "مردانه",
       brand: "Creed",
@@ -272,6 +272,7 @@ const products = ref([
     name: "بربری هر",
     price: 1750000,
     discountPercent: 7,
+    capacity: 40,
     rating: 4.1,
     reviews: 35,
     image:
@@ -279,7 +280,6 @@ const products = ref([
     category: "female",
     brand: "burberry",
     badge: { text: "اقتصادی", color: "neutral" },
-
     information: {
       gender: "زنانه",
       brand: "Burberry",
@@ -296,6 +296,7 @@ const products = ref([
     name: "تام فورد بلک اورکید",
     price: 2300000,
     discountPercent: 9,
+    capacity: 90,
     rating: 4.4,
     reviews: 147,
     image:
@@ -303,7 +304,6 @@ const products = ref([
     category: "unisex",
     brand: "tomford",
     badge: { text: "کلاسیک", color: "warning" },
-
     information: {
       gender: "یونیسکس",
       brand: "Tom Ford",
@@ -313,7 +313,7 @@ const products = ref([
       volume: "100ml / 150ml",
     },
   },
-]);
+])
 
 const filteredProducts = computed(() => {
   let list = [...products.value];

@@ -12,6 +12,7 @@
         :src="product.image"
         :alt="product.name"
         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        :class="{ 'grayscale': isOutOfStock }"
       />
 
       <!-- Gradient overlay on hover -->
@@ -19,8 +20,20 @@
         class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"
       />
 
+      <!-- Out of Stock Badge -->
+      <div v-if="isOutOfStock" class="absolute top-3 right-3 z-10">
+        <UBadge
+          color="red"
+          variant="solid"
+          size="md"
+          class="shadow-lg backdrop-blur-sm"
+        >
+          ناموجود
+        </UBadge>
+      </div>
+
       <!-- Badge for discount/new items -->
-      <div v-if="product.badge" class="absolute top-3 right-3 z-10">
+      <div v-else-if="product.badge" class="absolute top-3 right-3 z-10">
         <UBadge
           :color="product.badge.color"
           variant="solid"
@@ -60,8 +73,9 @@
         {{ product.name }}
       </h3>
 
-      <!-- Price Section -->
+      <!-- Price Section (Available) -->
       <div
+        v-if="!isOutOfStock"
         class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800"
       >
         <div class="flex items-baseline gap-2">
@@ -89,8 +103,21 @@
         />
       </div>
 
+      <!-- Out of Stock Section -->
+      <div
+        v-else
+        class="flex items-center justify-center pt-2 border-t border-gray-100 dark:border-gray-800"
+      >
+        <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+          <UIcon name="i-lucide-package-x" class="text-red-500 w-5 h-5" />
+          <span class="text-sm font-semibold text-red-600 dark:text-red-400">
+            این محصول موجود نیست
+          </span>
+        </div>
+      </div>
+
       <!-- Discount label -->
-      <div v-if="oldPrice" class="flex items-center gap-1 text-xs text-success">
+      <div v-if="oldPrice && !isOutOfStock" class="flex items-center gap-1 text-xs text-success">
         <UIcon name="i-lucide-trending-down" class="w-3 h-3" />
         <span class="font-medium"> {{ discountPercent }}٪ تخفیف </span>
       </div>
@@ -110,6 +137,11 @@ const { product } = defineProps({
 const formatPrice = (num) => {
   return num.toLocaleString("fa-IR") + " تومان";
 };
+
+// بررسی موجود بودن محصول
+const isOutOfStock = computed(() => {
+  return product.capacity === 0;
+});
 
 // قیمت با تخفیف
 const finalPrice = computed(() => {

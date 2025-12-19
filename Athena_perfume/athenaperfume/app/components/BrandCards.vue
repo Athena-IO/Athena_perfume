@@ -4,29 +4,31 @@
     <UCard
       v-for="brand in brands"
       :key="brand.id"
-      class="flex flex-col items-center text-center"
+      :ui="{ body: 'flex flex-col items-center text-center gap-3 p-4 sm:p-6' }"
     >
-      <div class="w-24 h-24 rounded-full overflow-hidden border border-default mb-3">
-        <img
-          :src="brand.image"
-          :alt="brand.name"
-          class="w-full h-full object-cover"
-        >
+      <UAvatar
+        :src="brand.image"
+        :alt="brand.name"
+        size="3xl"
+        class="ring-1 ring-border"
+      />
+
+      <div class="space-y-1">
+        <p class="font-medium text-default">
+          {{ brand.name }}
+        </p>
+        <p class="text-xs text-muted">
+          /product_brand/{{ brand.slug }}
+        </p>
       </div>
 
-      <div class="font-medium mb-1">
-        {{ brand.name }}
-      </div>
-
-      <div class="text-xs text-muted mb-3">
-        /product_brand/{{ brand.slug }}
-      </div>
-
-      <div class="flex gap-2">
+      <div class="flex gap-2 w-full mt-auto">
         <UButton
           size="xs"
           variant="outline"
+          color="neutral"
           icon="i-lucide-eye"
+          block
           @click="$emit('view', brand)"
         >
           Details
@@ -36,6 +38,7 @@
           color="error"
           variant="ghost"
           icon="i-lucide-trash-2"
+          square
           @click="$emit('delete', brand)"
         />
       </div>

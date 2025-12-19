@@ -1,8 +1,10 @@
 <script setup>
-import { reactive, watch, computed } from 'vue'
+import { reactive, ref, watch, computed } from 'vue'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const ACCEPTED_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
+
+const toast = useToast()
 
 // Form state
 const state = reactive({
@@ -11,11 +13,11 @@ const state = reactive({
   originalPrice: null,
   discountPercent: 0,
   category: '',
-  image: null,          // single File
+  image: null,
   badgeText: '',
   badgeColor: 'primary',
   gender: '',
-  brand: '',
+  brands: [],
   similar: '',
   type: '',
   seasons: [],
@@ -23,6 +25,8 @@ const state = reactive({
   capacity: 0,
   sold: 0
 })
+
+const showBrandModal = ref(false)
 
 const stockStatus = computed(() => {
   if (state.capacity === 0) {
@@ -63,31 +67,44 @@ const seasonOptions = [
   { label: 'چهار فصل', value: 'all-season' }
 ]
 
-const toast = useToast()
+// Accordion items for better organization
+const accordionItems = computed(() => [
+  {
+    label: 'اطلاعات اصلی',
+    icon: 'i-lucide-package',
+    slot: 'basic',
+    defaultOpen: true
+  },
+  {
+    label: 'مشخصات محصول',
+    icon: 'i-lucide-info',
+    slot: 'details'
+  },
+  {
+    label: 'برچسب و تخفیف',
+    icon: 'i-lucide-tag',
+    slot: 'badge'
+  }
+])
 
+// Validation
 function validate(formState) {
   const errors = []
-
   if (!formState.name || formState.name.length < 2) {
     errors.push({ name: 'name', message: 'نام باید حداقل 2 کاراکتر باشد' })
   }
-
   if (!formState.slug || formState.slug.length < 3) {
     errors.push({ name: 'slug', message: 'اسلاگ باید حداقل 3 کاراکتر باشد' })
   }
-
   if (!formState.originalPrice || formState.originalPrice <= 0) {
     errors.push({ name: 'originalPrice', message: 'قیمت باید بیشتر از 0 باشد' })
   }
-
   if (formState.discountPercent < 0 || formState.discountPercent > 100) {
     errors.push({ name: 'discountPercent', message: 'تخفیف باید بین 0 تا 100 باشد' })
   }
-
   if (!formState.category) {
     errors.push({ name: 'category', message: 'دسته‌بندی الزامی است' })
   }
-
   if (!formState.image) {
     errors.push({ name: 'image', message: 'لطفا یک تصویر انتخاب کنید' })
   } else {
@@ -98,35 +115,28 @@ function validate(formState) {
       errors.push({ name: 'image', message: 'فرمت تصویر باید JPG، PNG یا WebP باشد' })
     }
   }
-
   if (!formState.gender) {
     errors.push({ name: 'gender', message: 'جنسیت الزامی است' })
   }
-
-  if (!formState.brand) {
-    errors.push({ name: 'brand', message: 'برند الزامی است' })
+  if (!formState.brands || formState.brands.length === 0) {
+    errors.push({ name: 'brands', message: 'حداقل یک برند انتخاب کنید' })
   }
-
   if (!formState.type) {
     errors.push({ name: 'type', message: 'نوع عطر الزامی است' })
   }
-
   if (!formState.seasons || formState.seasons.length === 0) {
     errors.push({ name: 'seasons', message: 'حداقل یک فصل انتخاب کنید' })
   }
-
   if (!formState.volume) {
     errors.push({ name: 'volume', message: 'حجم الزامی است' })
   }
-
   if (formState.capacity === null || formState.capacity < 0) {
     errors.push({ name: 'capacity', message: 'موجودی باید 0 یا بیشتر باشد' })
   }
-
   return errors
 }
 
-// Auto-generate slug (only if slug is empty, so user can override)
+// Auto-generate slug
 watch(
   () => state.name,
   (newName) => {
@@ -139,8 +149,19 @@ watch(
   }
 )
 
-async function onSubmit (event) {
-  // Convert seasons to readable text (for showing later, optional for DB)
+// Handle brand selection
+function onBrandSelect(brand) {
+  const exists = state.brands.find(b => b.id === brand.id)
+  if (!exists) {
+    state.brands.push({
+      id: brand.id,
+      name: brand.name,
+      slug: brand.slug
+    })
+  }
+}
+
+async function onSubmit(event) {
   const seasonsText = event.data.seasons
     .map(season => {
       const option = seasonOptions.find(s => s.value === season)
@@ -148,7 +169,6 @@ async function onSubmit (event) {
     })
     .join('، ')
 
-  // Prepare the payload you want to store in DB (pure JSON, no blob URLs)
   const payload = {
     slug: event.data.slug,
     name: event.data.name,
@@ -158,7 +178,7 @@ async function onSubmit (event) {
     badgeText: event.data.badgeText || '',
     badgeColor: event.data.badgeColor || 'primary',
     gender: event.data.gender,
-    brand: event.data.brand,
+    brands: event.data.brands,
     similar: event.data.similar || '',
     type: event.data.type,
     seasons: event.data.seasons,
@@ -166,13 +186,10 @@ async function onSubmit (event) {
     volume: event.data.volume,
     capacity: event.data.capacity,
     sold: event.data.sold || 0
-    // NOTE: image is handled separately below
   }
 
-  // If you want to send the file to backend, use FormData instead of JSON:
   const formData = new FormData()
   Object.entries(payload).forEach(([key, value]) => {
-    // stringify arrays/objects
     if (Array.isArray(value) || typeof value === 'object') {
       formData.append(key, JSON.stringify(value))
     } else {
@@ -185,7 +202,6 @@ async function onSubmit (event) {
   }
 
   try {
-    // Recommended in Nuxt 3 for POST from components: $fetch[[Which to use](https://stackoverflow.com/questions/76839341)]
     const response = await $fetch('/api/perfumes', {
       method: 'POST',
       body: formData
@@ -210,159 +226,207 @@ async function onSubmit (event) {
 </script>
 
 <template>
-  <div class="container mx-auto p-6 max-w-7xl">
-    <h1 class="text-3xl font-bold mb-8">افزودن عطر جدید</h1>
+  <div class="container mx-auto p-4 sm:p-6 max-w-6xl">
+    <!-- Header -->
+    <div class="mb-6 sm:mb-8">
+      <h1 class="text-2xl sm:text-3xl font-bold text-default">افزودن عطر جدید</h1>
+      <p class="text-sm text-muted mt-1">اطلاعات عطر را وارد کنید</p>
+    </div>
 
-    <UForm :validate="validate" :state="state" @submit="onSubmit">
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Left side -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Basic Information -->
-          <div class="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-            <h2 class="text-xl font-semibold mb-4">اطلاعات اصلی</h2>
+    <UForm :validate="validate" :state="state" @submit="onSubmit" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+        <!-- Main Content - Left Side -->
+        <div class="lg:col-span-2 space-y-4">
+          <!-- Image Upload Card - Mobile First -->
+          <UCard class="lg:hidden">
+            <UFormField name="image" description="JPG, PNG یا WebP (حداکثر 5MB)" required>
+              <UFileUpload
+                v-model="state.image"
+                accept="image/*"
+                icon="i-lucide-image"
+                label="تصویر عطر را اینجا رها کنید"
+                description="یا کلیک کنید تا فایل انتخاب کنید"
+                class="min-h-48"
+              />
+            </UFormField>
+          </UCard>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormField label="نام عطر" name="name" required>
-                <UInput v-model="state.name" placeholder="دیور ساواج" />
-              </UFormField>
+          <!-- Accordion Sections -->
+          <UAccordion :items="accordionItems" :default-value="['0']" multiple>
+            <!-- Basic Information -->
+            <template #basic>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pb-4">
+                <UFormField label="نام عطر" name="name" required class="sm:col-span-2">
+                  <UInput v-model="state.name" placeholder="دیور ساواج" size="lg" />
+                </UFormField>
 
-              <UFormField label="اسلاگ (Slug)" name="slug" required>
-                <UInput v-model="state.slug" placeholder="dior-sauvage-4" />
-              </UFormField>
+                <UFormField label="اسلاگ (Slug)" name="slug" required class="sm:col-span-2">
+                  <UInput v-model="state.slug" placeholder="dior-sauvage-4" />
+                </UFormField>
 
-              <UFormField label="قیمت اصلی (تومان)" name="originalPrice" required>
-                <UInputNumber v-model="state.originalPrice" :min="0" />
-              </UFormField>
+                <UFormField label="قیمت اصلی (تومان)" name="originalPrice" required>
+                  <UInputNumber v-model="state.originalPrice" :min="0" />
+                </UFormField>
 
-              <UFormField label="درصد تخفیف" name="discountPercent">
-                <UInputNumber v-model="state.discountPercent" :min="0" :max="100" />
-              </UFormField>
+                <UFormField label="موجودی انبار" name="capacity" required>
+                  <UInputNumber v-model="state.capacity" :min="0" placeholder="تعداد" />
+                </UFormField>
 
-              <UFormField label="دسته‌بندی" name="category" required>
-                <USelect v-model="state.category" :items="categoryOptions" placeholder="انتخاب دسته‌بندی" />
-              </UFormField>
+                <UFormField label="دسته‌بندی" name="category" required class="sm:col-span-2">
+                  <USelect v-model="state.category" :items="categoryOptions" placeholder="انتخاب دسته‌بندی" />
+                </UFormField>
 
-              <UFormField label="موجودی انبار" name="capacity" required>
-                <UInputNumber v-model="state.capacity" :min="0" placeholder="تعداد موجود در انبار" />
-              </UFormField>
-            </div>
-
-            <!-- Stock Status -->
-            <div
-              v-if="state.capacity !== null"
-              class="mt-4 p-3 rounded-lg border"
-              :class="{
-                'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800': !stockStatus.available,
-                'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800': stockStatus.available && state.capacity <= 5,
-                'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800': stockStatus.available && state.capacity > 5
-              }"
-            >
-              <div class="flex items-center gap-2">
-                <UIcon
-                  :name="stockStatus.available ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
+                <!-- Stock Status Indicator -->
+                <div
+                  v-if="state.capacity !== null"
+                  class="sm:col-span-2 p-3 rounded-lg border flex items-center gap-2 text-sm"
                   :class="{
-                    'text-red-600 dark:text-red-400': !stockStatus.available,
-                    'text-yellow-600 dark:text-yellow-400': stockStatus.available && state.capacity <= 5,
-                    'text-green-600 dark:text-green-400': stockStatus.available && state.capacity > 5
-                  }"
-                  class="w-5 h-5"
-                />
-                <span
-                  class="font-medium"
-                  :class="{
-                    'text-red-700 dark:text-red-300': !stockStatus.available,
-                    'text-yellow-700 dark:text-yellow-300': stockStatus.available && state.capacity <= 5,
-                    'text-green-700 dark:text-green-300': stockStatus.available && state.capacity > 5
+                    'bg-red-50 dark:bg-red-950/50 border-red-200 dark:border-red-800': !stockStatus.available,
+                    'bg-yellow-50 dark:bg-yellow-950/50 border-yellow-200 dark:border-yellow-800': stockStatus.available && state.capacity <= 5,
+                    'bg-green-50 dark:bg-green-950/50 border-green-200 dark:border-green-800': stockStatus.available && state.capacity > 5
                   }"
                 >
-                  وضعیت: {{ stockStatus.text }}
-                </span>
-                <span
-                  class="mr-auto text-sm"
-                  :class="{
-                    'text-red-600 dark:text-red-400': !stockStatus.available,
-                    'text-yellow-600 dark:text-yellow-400': stockStatus.available && state.capacity <= 5,
-                    'text-green-600 dark:text-green-400': stockStatus.available && state.capacity > 5
-                  }"
-                >
-                  {{ state.capacity }} عدد در انبار
-                </span>
+                  <UIcon
+                    :name="stockStatus.available ? 'i-lucide-check-circle' : 'i-lucide-x-circle'"
+                    :class="{
+                      'text-red-600 dark:text-red-400': !stockStatus.available,
+                      'text-yellow-600 dark:text-yellow-400': stockStatus.available && state.capacity <= 5,
+                      'text-green-600 dark:text-green-400': stockStatus.available && state.capacity > 5
+                    }"
+                    class="size-5"
+                  />
+                  <span class="font-medium">{{ stockStatus.text }}</span>
+                  <span class="mr-auto opacity-75">{{ state.capacity }} عدد</span>
+                </div>
               </div>
-            </div>
-          </div>
+            </template>
 
-          <!-- Badge -->
-          <div class="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-            <h2 class="text-xl font-semibold mb-4">برچسب (Badge)</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormField label="متن برچسب" name="badgeText">
-                <UInput v-model="state.badgeText" placeholder="جدید" />
-              </UFormField>
+            <!-- Product Details -->
+            <template #details>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pb-4">
+                <UFormField label="جنسیت" name="gender" required>
+                  <UInput v-model="state.gender" placeholder="مردانه" />
+                </UFormField>
 
-              <UFormField label="رنگ برچسب" name="badgeColor">
-                <USelect v-model="state.badgeColor" :items="badgeColorOptions" />
-              </UFormField>
-            </div>
-          </div>
+                <UFormField label="نوع عطر" name="type" required>
+                  <USelect v-model="state.type" :items="typeOptions" placeholder="انتخاب نوع" />
+                </UFormField>
 
-          <!-- Product Info -->
-          <div class="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-            <h2 class="text-xl font-semibold mb-4">مشخصات محصول</h2>
+                <UFormField label="برندها" name="brands" required class="sm:col-span-2">
+                  <div class="space-y-2">
+                    <UButton
+                      type="button"
+                      color="primary"
+                      variant="soft"
+                      icon="i-lucide-plus"
+                      @click="showBrandModal = true"
+                      block
+                    >
+                      انتخاب برند
+                    </UButton>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <UFormField label="جنسیت" name="gender" required>
-                <UInput v-model="state.gender" placeholder="مردانه" />
-              </UFormField>
+                    <div v-if="state.brands.length" class="flex flex-wrap gap-2">
+                      <NuxtLink
+                        v-for="brand in state.brands"
+                        :key="brand.id"
+                        :to="`/product_brand/${brand.slug}`"
+                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg
+                               bg-elevated text-xs font-medium
+                               hover:bg-primary/10 hover:text-primary transition-colors
+                               ring-1 ring-default"
+                      >
+                        <span>{{ brand.name }}</span>
+                        <button
+                          type="button"
+                          class="text-muted hover:text-error transition-colors"
+                          @click.stop.prevent="
+                            state.brands = state.brands.filter(b => b.id !== brand.id)
+                          "
+                        >
+                          <UIcon name="i-lucide-x" class="size-3.5" />
+                        </button>
+                      </NuxtLink>
+                    </div>
+                    <p v-else class="text-xs text-muted">
+                      هنوز برندی انتخاب نشده است.
+                    </p>
+                  </div>
+                </UFormField>
 
-              <UFormField label="برند" name="brand" required>
-                <UInput v-model="state.brand" placeholder="Dior" />
-              </UFormField>
+                <UFormField label="عطر مشابه" name="similar" class="sm:col-span-2">
+                  <UInput v-model="state.similar" placeholder="Bleu de Chanel" />
+                </UFormField>
 
-              <UFormField label="عطر مشابه" name="similar">
-                <UInput v-model="state.similar" placeholder="Bleu de Chanel" />
-              </UFormField>
+                <UFormField
+                  label="فصل‌های مناسب"
+                  name="seasons"
+                  required
+                  class="sm:col-span-2"
+                >
+                  <USelectMenu
+                    v-model="state.seasons"
+                    :items="seasonOptions"
+                    multiple
+                    placeholder="انتخاب فصل‌ها"
+                  />
+                </UFormField>
 
-              <UFormField label="نوع عطر" name="type" required>
-                <USelect v-model="state.type" :items="typeOptions" placeholder="انتخاب نوع" />
-              </UFormField>
+                <UFormField label="حجم" name="volume" required>
+                  <UInput v-model="state.volume" placeholder="100ml" />
+                </UFormField>
+              </div>
+            </template>
 
-              <UFormField
-                label="فصل‌های مناسب"
-                name="seasons"
-                required
-                description="می‌توانید چند فصل انتخاب کنید"
+            <!-- Badge Section -->
+            <template #badge>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pb-4">
+                <UFormField label="درصد تخفیف" name="discountPercent">
+                  <UInputNumber v-model="state.discountPercent" :min="0" :max="100" />
+                </UFormField>
+
+                <UFormField label="متن برچسب" name="badgeText">
+                  <UInput v-model="state.badgeText" placeholder="جدید" />
+                </UFormField>
+
+                <UFormField label="رنگ برچسب" name="badgeColor" class="sm:col-span-2">
+                  <USelect v-model="state.badgeColor" :items="badgeColorOptions" />
+                </UFormField>
+              </div>
+            </template>
+          </UAccordion>
+
+          <!-- Action Buttons -->
+          <UCard>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <UButton type="submit" size="lg" color="primary" icon="i-lucide-save" class="flex-1 sm:flex-none">
+                افزودن عطر
+              </UButton>
+
+              <UButton
+                type="button"
+                size="lg"
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-x"
+                @click="$router.back()"
+                class="flex-1 sm:flex-none"
               >
-                <USelectMenu
-                  v-model="state.seasons"
-                  :items="seasonOptions"
-                  multiple
-                  placeholder="انتخاب فصل‌ها"
-                />
-              </UFormField>
-
-              <UFormField label="حجم" name="volume" required>
-                <UInput v-model="state.volume" placeholder="100ml / 200ml" />
-              </UFormField>
+                انصراف
+              </UButton>
             </div>
-          </div>
-
-          <!-- Buttons -->
-          <div class="flex gap-3">
-            <UButton type="submit" size="lg" color="primary">
-              افزودن عطر
-            </UButton>
-
-            <UButton type="button" size="lg" color="neutral" variant="outline" @click="$router.back()">
-              انصراف
-            </UButton>
-          </div>
+          </UCard>
         </div>
 
-        <!-- Right side - Image Upload -->
-        <div class="lg:col-span-1">
+        <!-- Right Sidebar - Image Upload (Desktop) -->
+        <div class="hidden lg:block lg:col-span-1">
           <div class="sticky top-6">
-            <div class="bg-white dark:bg-gray-900 p-6 rounded-lg border border-gray-200 dark:border-gray-800">
-              <h2 class="text-xl font-semibold mb-4">تصویر عطر</h2>
+            <UCard>
+              <template #header>
+                <div class="flex items-center gap-2">
+                  <UIcon name="i-lucide-image" class="size-5" />
+                  <span class="font-semibold">تصویر عطر</span>
+                </div>
+              </template>
 
               <UFormField name="image" description="JPG, PNG یا WebP (حداکثر 5MB)" required>
                 <UFileUpload
@@ -374,10 +438,16 @@ async function onSubmit (event) {
                   class="min-h-64"
                 />
               </UFormField>
-            </div>
+            </UCard>
           </div>
         </div>
       </div>
     </UForm>
+
+    <!-- Brand picker modal -->
+    <BrandSelectModal
+      v-model="showBrandModal"
+      @select="onBrandSelect"
+    />
   </div>
 </template>

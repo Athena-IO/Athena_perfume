@@ -82,9 +82,13 @@
           <UButton block color="gray" variant="outline" @click="isOpen = false">
             ادامه خرید
           </UButton>
-          <UButton block color="primary" to="/checkout" @click="isOpen = false">
-            تسویه حساب
-          </UButton>
+<UButton
+  block
+  color="primary"
+  @click="handleCheckout"
+>
+  تسویه حساب
+</UButton>
         </div>
 
         <UButton block color="error" variant="ghost" @click="clearCart">
@@ -97,10 +101,12 @@
 
 <script setup>
 import { useCartStore } from "~/composables/stores/cart";
+import { useAuth } from "~/composables/useAuth";
 
 const isOpen = defineModel("open", { default: false });
 const cart = useCartStore();
 const toast = useToast();
+const { user, isAuthenticated, isAdmin, logout } = useAuth();
 
 const formatPrice = (price) => {
   const num =
@@ -109,6 +115,18 @@ const formatPrice = (price) => {
       : price;
   return num.toLocaleString("fa-IR");
 };
+const handleCheckout = () => {
+  if (!isAuthenticated.value) {
+    isOpen.value = false
+    return navigateTo({
+      path: "/login",
+      query: { redirectTo: "/checkout" },
+    })
+  }
+
+  isOpen.value = false
+  return navigateTo("/checkout")
+}
 
 const calculateItemTotal = (item) => {
   return item.price * item.qty;

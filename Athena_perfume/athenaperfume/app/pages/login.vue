@@ -61,16 +61,16 @@
 </template>
 
 <script setup>
-const identifier = ref("");
-const password = ref("");
-const pending = ref(false);
+const identifier = ref("")
+const password = ref("")
+const pending = ref(false)
 
-// فقط useAuth رو بگیر
-const { setUser } = useAuth();
-const router = useRouter();
+const { setUser } = useAuth()
+const router = useRouter()
+const route = useRoute() // read query (?redirectTo=/checkout)
 
 const handleLogin = async () => {
-  pending.value = true;
+  pending.value = true
   try {
     const res = await $fetch("/api/accounts/login/", {
       method: "POST",
@@ -78,44 +78,46 @@ const handleLogin = async () => {
         identifier: identifier.value,
         password: password.value,
       },
-      // credentials: "include" ← اگه بک‌اندت httpOnly کوکی می‌ده نگه دار، وگرنه حذف کن
-    });
+    })
 
-    // مهم: کوکی access رو دستی ست کن (حتی اگه httpOnly باشه، بعضی بک‌اندا هر دو رو می‌دن)
-    const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 * 7 });
-    accessCookie.value = res.access || res.access_token;
+    const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 * 7 })
+    accessCookie.value = res.access || res.access_token
 
-    // مهم‌ترین خط: کاربر رو توی useAuth ست کن
-    setUser(res.user || res); // بک‌اندت یا res.user می‌ده یا همه رو توی رزالت
+    setUser(res.user || res)
 
-    // توست خوش‌آمدگویی
     useAppToast().toastSuccess({
       title:
         "خوش آمدی " + (res.user?.full_name || res.user?.username || "کاربر"),
       description: "ورود با موفقیت انجام شد",
-    });
+    })
 
-    // ریدایرکت
-    const role = res.user?.role || res.role;
-    router.push(role === "admin" ? "/admin" : "/");
+    // If we came with ?redirectTo=/checkout (from cart), go there
+    const redirectTo = route.query.redirectTo
+    if (redirectTo) {
+      return router.push(redirectTo)
+    }
+
+    // Otherwise, normal role-based redirect
+    const role = res.user?.role || res.role
+    router.push(role === "admin" ? "/admin" : "/")
   } catch (err) {
-    console.error("خطای ورود:", err);
+    console.error("خطای ورود:", err)
 
-    let message = "مشکلی پیش آمد، دوباره تلاش کن";
-    if (err?.status === 401 || err?.status === 400) {
-      message = err?.data?.detail || "شناسه یا رمز عبور اشتباه است";
-    } else if (err?.status === 404) {
-      message = "سرور پیدا نشد. بک‌اند اجرا شده؟";
-    } else if (err?.status >= 500) {
-      message = "سرور مشکلی دارد، بعداً تلاش کن";
+    let message = "مشکلی پیش آمد، دوباره تلاش کن"
+    if (err && (err.status === 401 || err.status === 400)) {
+      message = (err.data && err.data.detail) || "شناسه یا رمز عبور اشتباه است"
+    } else if (err && err.status === 404) {
+      message = "سرور پیدا نشد. بک‌اند اجرا شده؟"
+    } else if (err && err.status >= 500) {
+      message = "سرور مشکلی دارد، بعداً تلاش کن"
     }
 
     useAppToast().toastError({
       title: "ورود ناموفق",
       description: message,
-    });
+    })
   } finally {
-    pending.value = false;
+    pending.value = false
   }
-};
+}
 </script>

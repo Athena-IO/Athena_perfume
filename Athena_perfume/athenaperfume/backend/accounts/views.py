@@ -14,6 +14,7 @@ from .serializers import RegisterSerializer
 class RegisterView(generics.ListCreateAPIView):
     queryset = CustomUser.objects.all().order_by('-id')  # لیست جدیدترین کاربران
     serializer_class = RegisterSerializer
+  
 
     def get_permissions(self):
         if self.request.method == 'POST':

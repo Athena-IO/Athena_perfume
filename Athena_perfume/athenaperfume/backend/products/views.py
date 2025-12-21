@@ -1,29 +1,54 @@
 from rest_framework import generics, permissions
-from .models import Product
-from .serializers import ProductSerializer
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+
+from .models import Product, Brand 
+from .serializers import ProductSerializer, BrandSerializer
 from .utils import calculate_price
+
 
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAdminUser]  # فقط ادمین بتونه ایجاد کنه
+    permission_classes = [permissions.IsAdminUser]
 
     def perform_create(self, serializer):
         serializer.save()
+
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
     lookup_field = 'slug'
-    permission_classes = [permissions.IsAdminUser]  # فقط ادمین ویرایش/حذف کنه
+    permission_classes = [permissions.IsAdminUser]
 
     def perform_destroy(self, instance):
-        instance.is_active = False  # soft delete
+        instance.is_active = False
         instance.save()
 
 
+# --- ویوهای برند ---
+class BrandListCreateView(generics.ListCreateAPIView):
+    queryset = Brand.objects.all()
+    serializer_class = BrandSerializer
+    permission_classes = [permissions.IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
+
+
+class BrandDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Brand.objects.all()
+    serializer_class = BrandSerializer
+    permission_classes = [permissions.IsAdminUser]
+    lookup_field = 'slug'
+
+
+# --- محاسبه قیمت بر اساس تعداد ---
 @api_view(['GET'])
 def calculate_price_view(request, slug):
     try:

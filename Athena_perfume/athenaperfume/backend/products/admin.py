@@ -6,8 +6,16 @@ from .models import PricingRule
 
 @admin.register(Brand)
 class BrandAdmin(admin.ModelAdmin):
-    list_display = ['name']
+    list_display = ['name', 'slug', 'get_logo_preview']
     search_fields = ['name']
+    prepopulated_fields = {'slug': ('name',)}
+    readonly_fields = ['get_logo_preview']
+
+    def get_logo_preview(self, obj):
+        if obj.logo:
+            return format_html('<img src="{}" style="height: 80px; object-fit: contain;" />', obj.logo.url)
+        return "(No logo)"
+    get_logo_preview.short_description = 'Logo Preview'
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):

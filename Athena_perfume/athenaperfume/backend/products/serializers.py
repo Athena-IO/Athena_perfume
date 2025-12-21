@@ -1,6 +1,22 @@
 from rest_framework import serializers
 from .models import Product, Brand, Category, Tag, TagGroup
 
+
+class BrandSerializer(serializers.ModelSerializer):
+    logo_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Brand
+        fields = ['id', 'name', 'slug', 'logo', 'logo_url']
+        read_only_fields = ['slug', 'logo_url']
+
+    def get_logo_url(self, obj):
+        if obj.logo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.logo.url)
+            return obj.logo.url
+        return None
 class TagSerializer(serializers.ModelSerializer):
     group_name = serializers.CharField(source='group.name', read_only=True)
     group_color = serializers.CharField(source='group.color', read_only=True)

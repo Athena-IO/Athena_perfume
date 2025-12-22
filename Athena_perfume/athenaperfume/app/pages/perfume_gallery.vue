@@ -1,7 +1,6 @@
-<script setup lang="ts">
+<script setup>
 import { h, resolveComponent } from "vue";
 import { useClipboard } from "@vueuse/core";
-import type { TableColumn, DropdownMenuItem } from "@nuxt/ui";
 
 const UBadge = resolveComponent("UBadge");
 const UButton = resolveComponent("UButton");
@@ -12,46 +11,24 @@ const toast = useToast();
 const router = useRouter();
 const { copy } = useClipboard();
 
-type Perfume = {
-  id: string;
-  slug: string;
-  name: string;
-  originalPrice: number;
-  discountPercent: number;
-  category: "male" | "female" | "unisex";
-  image: string;
-  badgeText: string;
-  badgeColor: string;
-  gender: string;
-  brands: Array<{ id: string; name: string; slug: string }>;
-  type: string;
-  seasons: string[];
-  volume: string;
-  capacity: number;
-  sold: number;
-  createdAt?: string;
-};
-
-// Fetch perfumes from your API
 const {
   data: perfumes,
   refresh,
   pending,
-} = await useFetch<Perfume[]>("/api/perfumes", {
+} = await useFetch("/api/perfumes", {
   lazy: true,
 });
 
 const table = useTemplateRef("table");
 
-// Search & Filter states
+// Filter states
 const searchQuery = ref("");
 const selectedCategory = ref("all");
-const selectedBrands = ref<string[]>([]);
+const selectedBrands = ref([]);
 const selectedSort = ref("none");
-const showOutOfStock = ref(false);
 
 // Table columns definition
-const columns: TableColumn<Perfume>[] = [
+const columns = [
   {
     id: "select",
     header: ({ table }) =>
@@ -59,15 +36,14 @@ const columns: TableColumn<Perfume>[] = [
         modelValue: table.getIsSomePageRowsSelected()
           ? "indeterminate"
           : table.getIsAllPageRowsSelected(),
-        "onUpdate:modelValue": (value: boolean | "indeterminate") =>
+        "onUpdate:modelValue": (value) =>
           table.toggleAllPageRowsSelected(!!value),
         "aria-label": "انتخاب همه",
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
-        "onUpdate:modelValue": (value: boolean | "indeterminate") =>
-          row.toggleSelected(!!value),
+        "onUpdate:modelValue": (value) => row.toggleSelected(!!value),
         "aria-label": "انتخاب ردیف",
       }),
     enableSorting: false,
@@ -124,12 +100,11 @@ const columns: TableColumn<Perfume>[] = [
     header: "دسته‌بندی",
     cell: ({ row }) => {
       const categoryMap = {
-        male: { label: "مردانه", color: "info" as const },
-        female: { label: "زنانه", color: "secondary" as const },
-        unisex: { label: "یونیسکس", color: "neutral" as const },
+        male: { label: "مردانه", color: "info" },
+        female: { label: "زنانه", color: "secondary" },
+        unisex: { label: "یونیسکس", color: "neutral" },
       };
-      const cat =
-        categoryMap[row.getValue("category") as keyof typeof categoryMap];
+      const cat = categoryMap[row.getValue("category")];
 
       return h(
         UBadge,
@@ -145,8 +120,8 @@ const columns: TableColumn<Perfume>[] = [
     accessorKey: "capacity",
     header: "موجودی",
     cell: ({ row }) => {
-      const capacity = row.getValue("capacity") as number;
-      let color: "error" | "warning" | "success" = "success";
+      const capacity = row.getValue("capacity");
+      let color = "success";
       let label = "موجود";
 
       if (capacity === 0) {
@@ -198,7 +173,7 @@ const columns: TableColumn<Perfume>[] = [
     id: "actions",
     enableHiding: false,
     cell: ({ row }) => {
-      const items: DropdownMenuItem[][] = [
+      const items = [
         [
           {
             type: "label",
@@ -280,11 +255,6 @@ const filteredData = computed(() => {
     );
   }
 
-  // Out of stock filter
-  if (showOutOfStock.value) {
-    filtered = filtered.filter((p) => p.capacity === 0);
-  }
-
   // Search query
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase();
@@ -309,15 +279,14 @@ const filteredData = computed(() => {
 });
 
 // Row selection
-const rowSelection = ref<Record<string, boolean>>({});
+const rowSelection = ref({});
 
 // Actions
-function editPerfume(perfume: Perfume) {
-  // تغییر: اینجا به صفحه edit_perfume می‌ره
+function editPerfume(perfume) {
   router.push(`/edit_perfume/${perfume.id}`);
 }
 
-async function deletePerfume(perfume: Perfume) {
+async function deletePerfume(perfume) {
   if (!confirm(`آیا مطمئن هستید که می‌خواهید "${perfume.name}" را حذف کنید؟`)) {
     return;
   }
@@ -409,7 +378,6 @@ const stats = computed(() => {
         <p class="text-sm text-muted mt-1">لیست و مدیریت عطرهای فروشگاه</p>
       </div>
 
-      <!-- تغییر: دکمه افزودن به /add_perfume می‌ره -->
       <UButton to="/add_perfume" color="primary" icon="i-lucide-plus" size="lg">
         افزودن عطر جدید
       </UButton>
@@ -467,89 +435,17 @@ const stats = computed(() => {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Filters Sidebar -->
+      <!-- Use the extracted filter component -->
       <div class="lg:col-span-1">
-        <UCard class="sticky top-6">
-          <template #header>
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <UIcon name="i-lucide-filter" class="size-5 text-primary" />
-                <h2 class="font-bold text-lg">فیلتر</h2>
-              </div>
-              <UButton
-                v-if="
-                  selectedCategory !== 'all' ||
-                  selectedBrands.length > 0 ||
-                  showOutOfStock
-                "
-                size="xs"
-                color="neutral"
-                variant="ghost"
-                @click="
-                  () => {
-                    selectedCategory = 'all';
-                    selectedBrands = [];
-                    showOutOfStock = false;
-                  }
-                "
-              >
-                پاک کردن
-              </UButton>
-            </div>
-          </template>
-
-          <!-- Category Filter -->
-          <div class="space-y-3 mb-6">
-            <label
-              class="text-sm font-semibold text-gray-900 dark:text-white flex items-center gap-2"
-            >
-              <UIcon name="i-lucide-layers" class="size-4" />
-              دسته‌بندی
-            </label>
-            <URadioGroup
-              v-model="selectedCategory"
-              :items="[
-                { label: 'همه', value: 'all' },
-                { label: 'مردانه', value: 'male' },
-                { label: 'زنانه', value: 'female' },
-                { label: 'یونیسکس', value: 'unisex' },
-              ]"
-              color="primary"
-              variant="card"
-            />
-          </div>
-
-          <USeparator class="my-6" />
-
-          <!-- Sort -->
-          <div class="space-y-3 mb-6">
-            <label class="text-sm font-semibold flex items-center gap-2">
-              <UIcon name="i-lucide-arrow-up-down" class="size-4" />
-              مرتب‌سازی
-            </label>
-            <USelect
-              v-model="selectedSort"
-              :items="[
-                { label: 'بدون مرتب‌سازی', value: 'none' },
-                { label: 'ارزان‌ترین', value: 'price_low_high' },
-                { label: 'گران‌ترین', value: 'price_high_low' },
-                { label: 'کمترین موجودی', value: 'capacity_low' },
-              ]"
-              size="md"
-            />
-          </div>
-
-          <USeparator class="my-6" />
-
-          <!-- Out of Stock Filter -->
-          <div class="space-y-3">
-            <UCheckbox
-              v-model="showOutOfStock"
-              label="فقط ناموجودها"
-              color="error"
-            />
-          </div>
-        </UCard>
+        <ProductFilter
+          :selected-category="selectedCategory"
+          :selected-brands="selectedBrands"
+          :selected-sort="selectedSort"
+          :filtered-count="filteredData.length"
+          @update:category="selectedCategory = $event"
+          @update:brands="selectedBrands = $event"
+          @update:sort="selectedSort = $event"
+        />
       </div>
 
       <!-- Main Table -->

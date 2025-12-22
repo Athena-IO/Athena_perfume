@@ -60,7 +60,7 @@
             class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
           >
             <ProductCard
-              v-for="product in filteredProducts"
+              v-for="product in visibleProducts"
               :key="product.id"
               :product="product"
             />
@@ -76,6 +76,21 @@
               محصولی یافت نشد
             </p>
           </div>
+
+          <!-- Show more -->
+          <div v-else ref="loadMoreRef" class="flex justify-center mt-8">
+            <UButton
+              v-if="!allVisible"
+              color="primary"
+              variant="soft"
+              @click="showMore"
+            >
+              نمایش بیشتر
+            </UButton>
+            <p v-else class="text-sm text-gray-500">
+              همه محصولات نمایش داده شده‌اند
+            </p>
+          </div>
         </div>
       </div>
     </UContainer>
@@ -83,7 +98,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from "vue";
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import ProductFilter from "~/components/ProductFilter.vue";
 import ProductCard from "~/components/ProductCard.vue";
 
@@ -147,7 +162,6 @@ const products = ref([
       volume: "100ml / 200ml",
     },
   },
-
   {
     id: 5,
     slug: "chanel-bleu-5",
@@ -170,7 +184,6 @@ const products = ref([
       volume: "100ml / 150ml",
     },
   },
-
   {
     id: 6,
     slug: "lancome-la-vie-6",
@@ -194,7 +207,6 @@ const products = ref([
       volume: "75ml / 100ml",
     },
   },
-
   {
     id: 7,
     slug: "versace-eros-7",
@@ -218,7 +230,6 @@ const products = ref([
       volume: "100ml / 200ml",
     },
   },
-
   {
     id: 8,
     slug: "ysl-libre-8",
@@ -242,7 +253,6 @@ const products = ref([
       volume: "90ml",
     },
   },
-
   {
     id: 9,
     slug: "creed-aventus-9",
@@ -265,7 +275,6 @@ const products = ref([
       volume: "100ml / 120ml",
     },
   },
-
   {
     id: 10,
     slug: "burberry-her-10",
@@ -289,7 +298,6 @@ const products = ref([
       volume: "100ml",
     },
   },
-
   {
     id: 11,
     slug: "tomford-black-orchid-11",
@@ -313,8 +321,9 @@ const products = ref([
       volume: "100ml / 150ml",
     },
   },
-])
+]);
 
+// full filtered list (by category/brand/sort)
 const filteredProducts = computed(() => {
   let list = [...products.value];
 
@@ -336,5 +345,68 @@ const filteredProducts = computed(() => {
   }
 
   return list;
+});
+
+// pagination state
+const pageSize = 12;
+const visibleCount = ref(pageSize);
+
+// reset visibleCount when filters change
+watch(
+  () => [
+    selectedCategory.value,
+    selectedBrands.value.slice(),
+    selectedSort.value,
+  ],
+  () => {
+    visibleCount.value = pageSize;
+  }
+);
+
+// only show first visibleCount items
+const visibleProducts = computed(() =>
+  filteredProducts.value.slice(0, visibleCount.value)
+);
+
+const allVisible = computed(
+  () => visibleCount.value >= filteredProducts.value.length
+);
+
+function showMore() {
+  if (!allVisible.value) {
+    visibleCount.value += pageSize;
+  }
+}
+
+// optional: auto-load when button is in view
+const loadMoreRef = ref(null);
+let observer;
+
+onMounted(() => {
+  if (typeof window === "undefined") return;
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !allVisible.value) {
+          showMore();
+        }
+      });
+    },
+    {
+      root: null,
+      threshold: 0.1,
+    }
+  );
+
+  if (loadMoreRef.value) {
+    observer.observe(loadMoreRef.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  if (observer && loadMoreRef.value) {
+    observer.unobserve(loadMoreRef.value);
+  }
 });
 </script>

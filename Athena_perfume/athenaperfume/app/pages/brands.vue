@@ -31,16 +31,16 @@
         <!-- Name -->
         <div>
           <label class="block text-sm font-medium mb-2">Brand Name *</label>
-          <UInput
-            v-model="form.name"
-            placeholder="e.g., Nike"
-            size="lg"
-          />
+          <UInput v-model="form.name" placeholder="e.g., Nike" size="lg" />
         </div>
 
-        <!-- Generated link preview -->
-        <div v-if="slug" class="text-sm text-muted">
-          Link will be: <code>/product_brand/{{ slug }}</code>
+        <!-- Slug (editable) -->
+        <div>
+          <label class="block text-sm font-medium mb-2">Slug *</label>
+          <UInput v-model="form.slug" placeholder="e.g., nike" size="lg" />
+          <p class="text-xs text-muted mt-1">
+            Link will be: <code>/product_brand/{{ form.slug }}</code>
+          </p>
         </div>
 
         <div class="flex justify-end pt-4">
@@ -49,7 +49,7 @@
             icon="i-lucide-plus"
             size="lg"
             :loading="isAdding"
-            :disabled="!form.image || !form.name"
+            :disabled="!form.image || !form.name || !form.slug"
             @click="handleAddBrand"
           />
         </div>
@@ -61,11 +61,17 @@
       <h2 class="text-xl font-semibold mb-4">Current Brands</h2>
 
       <div v-if="loading" class="text-center py-12">
-        <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl text-muted" />
+        <UIcon
+          name="i-lucide-loader-2"
+          class="animate-spin text-4xl text-muted"
+        />
         <p class="text-muted mt-2">Loading brands...</p>
       </div>
 
-      <div v-else-if="brands.length === 0" class="text-center py-12 border border-dashed border-default rounded-lg">
+      <div
+        v-else-if="brands.length === 0"
+        class="text-center py-12 border border-dashed border-default rounded-lg"
+      >
         <UIcon name="i-lucide-image-off" class="text-4xl text-muted mb-2" />
         <p class="text-muted">No brands added yet</p>
       </div>
@@ -82,90 +88,95 @@
 </template>
 
 <script setup>
-const toast = useToast()
-const router = useRouter()
+const toast = useToast();
+const router = useRouter();
 
-// composable
-const { brands, loading, fetchBrands, addBrand, deleteBrand } = useBrands()
+// your composable
+const { brands, loading, fetchBrands, addBrand, deleteBrand } = useBrands();
 
-const isAdding = ref(false)
+const isAdding = ref(false);
 
 const form = reactive({
   image: null,
-  name: ''
-})
+  name: "",
+  slug: "",
+});
 
-// simple slug from name: "Nike Air" -> "nike-air"
-const slug = computed(() =>
-  form.name
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^a-z0-9-]/g, '')
-)
+// auto-generate slug from name if slug is empty
+watch(
+  () => form.name,
+  (val) => {
+    if (!form.slug) {
+      form.slug = val
+        .trim()
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+        .replace(/[^a-z0-9-]/g, "");
+    }
+  }
+);
 
 async function handleAddBrand() {
-  if (!form.image || !form.name) {
+  if (!form.image || !form.name || !form.slug) {
     toast.add({
-      title: 'Validation Error',
-      description: 'Please provide an image and name',
-      color: 'error'
-    })
-    return
+      title: "Validation Error",
+      description: "Please provide an image, name and slug",
+      color: "error",
+    });
+    return;
   }
 
-  isAdding.value = true
+  isAdding.value = true;
   try {
-    const formData = new FormData()
-    formData.append('image', form.image)
-    formData.append('name', form.name)
-    formData.append('slug', slug.value)
+    const formData = new FormData();
+    formData.append("image", form.image);
+    formData.append("name", form.name);
+    formData.append("slug", form.slug);
 
-    await addBrand(formData)
+    await addBrand(formData);
 
-    form.image = null
-    form.name = ''
+    form.image = null;
+    form.name = "";
+    form.slug = "";
 
     toast.add({
-      title: 'Success',
-      description: 'Brand added successfully',
-      color: 'success'
-    })
+      title: "Success",
+      description: "Brand added successfully",
+      color: "success",
+    });
   } catch (error) {
     toast.add({
-      title: 'Error',
-      description: error?.message || 'Failed to add brand',
-      color: 'error'
-    })
+      title: "Error",
+      description: error?.message || "Failed to add brand",
+      color: "error",
+    });
   } finally {
-    isAdding.value = false
+    isAdding.value = false;
   }
 }
 
 function viewBrand(brand) {
-  // go to detail page using slug
-  router.push(`/product_brand/${brand.slug}`)
+  router.push(`/product_brand/${brand.slug}`);
 }
 
 async function confirmDeleteBrand(brand) {
-  // you can add a confirm modal here if you want
   try {
-    await deleteBrand(brand.id)
+    await deleteBrand(brand.id);
     toast.add({
-      title: 'Success',
-      description: 'Brand removed successfully',
-      color: 'success'
-    })
+      title: "Success",
+      description: "Brand removed successfully",
+      color: "success",
+    });
   } catch (error) {
     toast.add({
-      title: 'Error',
-      description: 'Failed to remove brand',
-      color: 'error'
-    })
+      title: "Error",
+      description: "Failed to remove brand",
+      color: "error",
+    });
   }
 }
 
 onMounted(() => {
-  fetchBrands()
-})
-</script>   
+  fetchBrands();
+});
+</script>

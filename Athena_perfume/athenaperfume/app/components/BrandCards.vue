@@ -17,9 +17,7 @@
         <p class="font-medium text-default">
           {{ brand.name }}
         </p>
-        <p class="text-xs text-muted">
-          /product_brand/{{ brand.slug }}
-        </p>
+        <p class="text-xs text-muted">/product_brand/{{ brand.slug }}</p>
       </div>
 
       <div class="flex gap-2 w-full mt-auto">
@@ -50,9 +48,9 @@
 defineProps({
   brands: {
     type: Array,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
-defineEmits(['view', 'delete'])
+defineEmits(["view", "delete"]);
 </script>

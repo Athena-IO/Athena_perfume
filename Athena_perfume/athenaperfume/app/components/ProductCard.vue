@@ -12,7 +12,7 @@
         :src="product.image"
         :alt="product.name"
         class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        :class="{ 'grayscale': isOutOfStock }"
+        :class="{ grayscale: isOutOfStock }"
       />
 
       <!-- Gradient overlay on hover -->
@@ -32,7 +32,19 @@
         </UBadge>
       </div>
 
-      <!-- Badge for discount/new items -->
+      <!-- Discount Badge (Dark Red) -->
+      <div v-else-if="hasDiscount" class="absolute top-3 right-3 z-10">
+        <div
+          class="bg-red-900 text-white px-3 py-2 rounded-lg shadow-lg backdrop-blur-sm"
+        >
+          <div class="flex items-center gap-1">
+            <UIcon name="i-lucide-percent" class="w-4 h-4" />
+            <span class="text-sm font-bold">{{ discountPercent }}٪ تخفیف</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Badge for new items or other badges -->
       <div v-else-if="product.badge" class="absolute top-3 right-3 z-10">
         <UBadge
           :color="product.badge.color"
@@ -79,8 +91,13 @@
         class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800"
       >
         <div class="flex items-baseline gap-2">
-          <!-- قیمت جدید -->
-          <p class="text-xl font-bold text-primary">
+          <!-- قیمت جدید با رنگ قرمز تیره در صورت تخفیف -->
+          <p
+            class="text-xl font-bold"
+            :class="
+              hasDiscount ? 'text-red-900 dark:text-red-500' : 'text-primary'
+            "
+          >
             {{ formatPrice(finalPrice) }}
           </p>
 
@@ -108,7 +125,9 @@
         v-else
         class="flex items-center justify-center pt-2 border-t border-gray-100 dark:border-gray-800"
       >
-        <div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+        <div
+          class="flex items-center gap-2 px-4 py-2 rounded-lg bg-red-50 dark:bg-red-900/20"
+        >
           <UIcon name="i-lucide-package-x" class="text-red-500 w-5 h-5" />
           <span class="text-sm font-semibold text-red-600 dark:text-red-400">
             این محصول موجود نیست
@@ -117,10 +136,6 @@
       </div>
 
       <!-- Discount label -->
-      <div v-if="oldPrice && !isOutOfStock" class="flex items-center gap-1 text-xs text-success">
-        <UIcon name="i-lucide-trending-down" class="w-3 h-3" />
-        <span class="font-medium"> {{ discountPercent }}٪ تخفیف </span>
-      </div>
     </div>
   </NuxtLink>
 </template>
@@ -141,6 +156,11 @@ const formatPrice = (num) => {
 // بررسی موجود بودن محصول
 const isOutOfStock = computed(() => {
   return product.capacity === 0;
+});
+
+// بررسی وجود تخفیف
+const hasDiscount = computed(() => {
+  return product.discountPercent && product.discountPercent > 0;
 });
 
 // قیمت با تخفیف

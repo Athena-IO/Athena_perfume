@@ -1,33 +1,33 @@
-// composables/useBrands.js
 export function useBrands() {
-  const brands = useState('brands', () => [])
-  const loading = ref(false)
+  const brands = useState("brands", () => []);
+  const loading = ref(false);
 
   async function fetchBrands() {
-    loading.value = true
+    loading.value = true;
     try {
-      const { data } = await useFetch('/api/brands')
-      brands.value = data.value || []
+      const { data } = await useFetch("/api/brands");
+      brands.value = data.value || [];
     } finally {
-      loading.value = false
+      loading.value = false;
     }
   }
 
   async function addBrand(formData) {
-    // formData: FormData with name, slug, image, etc.
-    const created = await $fetch('/api/brands', {
-      method: 'POST',
-      body: formData
-    })
-    brands.value.push(created)
-    return created
+    await $fetch("/api/brands", {
+      method: "POST",
+      body: formData,
+    });
+    // re-fetch from DB so list is always in sync
+    await fetchBrands();
   }
 
   async function deleteBrand(id) {
     await $fetch(`/api/brands/${id}`, {
-      method: 'DELETE'
-    })
-    brands.value = brands.value.filter(b => b.id !== id)
+      method: "DELETE",
+    });
+    // optionally also refetch here:
+    // await fetchBrands()
+    brands.value = brands.value.filter((b) => b.id !== id);
   }
 
   return {
@@ -35,6 +35,6 @@ export function useBrands() {
     loading,
     fetchBrands,
     addBrand,
-    deleteBrand
-  }
+    deleteBrand,
+  };
 }

@@ -1,11 +1,5 @@
 <script setup>
-import { h, resolveComponent } from "vue";
 import { useClipboard } from "@vueuse/core";
-
-const UBadge = resolveComponent("UBadge");
-const UButton = resolveComponent("UButton");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
-const UCheckbox = resolveComponent("UCheckbox");
 
 const toast = useToast();
 const router = useRouter();
@@ -19,223 +13,11 @@ const {
   lazy: true,
 });
 
-const table = useTemplateRef("table");
-
 // Filter states
 const searchQuery = ref("");
 const selectedCategory = ref("all");
 const selectedBrands = ref([]);
 const selectedSort = ref("none");
-
-// Table columns definition
-const columns = [
-  {
-    id: "select",
-    header: ({ table }) =>
-      h(UCheckbox, {
-        modelValue: table.getIsSomePageRowsSelected()
-          ? "indeterminate"
-          : table.getIsAllPageRowsSelected(),
-        "onUpdate:modelValue": (value) =>
-          table.toggleAllPageRowsSelected(!!value),
-        "aria-label": "انتخاب همه",
-      }),
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        modelValue: row.getIsSelected(),
-        "onUpdate:modelValue": (value) => row.toggleSelected(!!value),
-        "aria-label": "انتخاب ردیف",
-      }),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "image",
-    header: "تصویر",
-    cell: ({ row }) => {
-      return h("img", {
-        src: row.getValue("image") || "/placeholder.png",
-        alt: row.original.name,
-        class: "size-12 rounded-lg object-cover",
-      });
-    },
-    enableSorting: false,
-  },
-  {
-    accessorKey: "name",
-    header: "نام عطر",
-    cell: ({ row }) => {
-      return h("div", { class: "space-y-1" }, [
-        h("p", { class: "font-medium text-highlighted" }, row.getValue("name")),
-        h("p", { class: "text-xs text-muted" }, row.original.slug),
-      ]);
-    },
-  },
-  {
-    accessorKey: "brands",
-    header: "برند",
-    cell: ({ row }) => {
-      const brands = row.original.brands || [];
-      if (brands.length === 0) return h("span", { class: "text-muted" }, "-");
-
-      return h(
-        "div",
-        { class: "flex flex-wrap gap-1" },
-        brands.map((brand) =>
-          h(
-            UBadge,
-            {
-              variant: "subtle",
-              color: "neutral",
-              size: "xs",
-            },
-            () => brand.name
-          )
-        )
-      );
-    },
-  },
-  {
-    accessorKey: "category",
-    header: "دسته‌بندی",
-    cell: ({ row }) => {
-      const categoryMap = {
-        male: { label: "مردانه", color: "info" },
-        female: { label: "زنانه", color: "secondary" },
-        unisex: { label: "یونیسکس", color: "neutral" },
-      };
-      const cat = categoryMap[row.getValue("category")];
-
-      return h(
-        UBadge,
-        {
-          variant: "subtle",
-          color: cat.color,
-        },
-        () => cat.label
-      );
-    },
-  },
-  {
-    accessorKey: "capacity",
-    header: "موجودی",
-    cell: ({ row }) => {
-      const capacity = row.getValue("capacity");
-      let color = "success";
-      let label = "موجود";
-
-      if (capacity === 0) {
-        color = "error";
-        label = "ناموجود";
-      } else if (capacity <= 5) {
-        color = "warning";
-        label = `${capacity} عدد`;
-      } else {
-        label = `${capacity} عدد`;
-      }
-
-      return h("div", { class: "flex items-center gap-2" }, [
-        h(UBadge, { variant: "subtle", color }, () => label),
-      ]);
-    },
-  },
-  {
-    accessorKey: "originalPrice",
-    header: () => h("div", { class: "text-right" }, "قیمت"),
-    cell: ({ row }) => {
-      const price = Number(row.getValue("originalPrice"));
-      const discount = row.original.discountPercent || 0;
-      const finalPrice = price - (price * discount) / 100;
-
-      return h("div", { class: "text-right" }, [
-        discount > 0
-          ? h("div", { class: "space-y-1" }, [
-              h(
-                "p",
-                { class: "font-medium text-success" },
-                `${finalPrice.toLocaleString("fa-IR")} تومان`
-              ),
-              h(
-                "p",
-                { class: "text-xs text-muted line-through" },
-                `${price.toLocaleString("fa-IR")} تومان`
-              ),
-            ])
-          : h(
-              "p",
-              { class: "font-medium" },
-              `${price.toLocaleString("fa-IR")} تومان`
-            ),
-      ]);
-    },
-  },
-  {
-    id: "actions",
-    enableHiding: false,
-    cell: ({ row }) => {
-      const items = [
-        [
-          {
-            type: "label",
-            label: "عملیات",
-          },
-        ],
-        [
-          {
-            label: "ویرایش",
-            icon: "i-lucide-edit",
-            onSelect() {
-              editPerfume(row.original);
-            },
-          },
-          {
-            label: "کپی ID",
-            icon: "i-lucide-copy",
-            onSelect() {
-              copy(row.original.id);
-              toast.add({
-                title: "شناسه کپی شد!",
-                color: "success",
-                icon: "i-lucide-circle-check",
-              });
-            },
-          },
-        ],
-        [
-          {
-            label: "حذف",
-            icon: "i-lucide-trash",
-            color: "error",
-            onSelect() {
-              deletePerfume(row.original);
-            },
-          },
-        ],
-      ];
-
-      return h(
-        "div",
-        { class: "text-right" },
-        h(
-          UDropdownMenu,
-          {
-            content: { align: "end" },
-            items,
-            "aria-label": "منوی عملیات",
-          },
-          () =>
-            h(UButton, {
-              icon: "i-lucide-ellipsis-vertical",
-              color: "neutral",
-              variant: "ghost",
-              class: "ml-auto",
-              "aria-label": "عملیات",
-            })
-        )
-      );
-    },
-  },
-];
 
 // Filter and search logic
 const filteredData = computed(() => {
@@ -278,12 +60,9 @@ const filteredData = computed(() => {
   return filtered;
 });
 
-// Row selection
-const rowSelection = ref({});
-
 // Actions
 function editPerfume(perfume) {
-  router.push(`/edit_perfume/${perfume.id}`);
+  router.push(`/admin/perfumes/edit/${perfume.id}`);
 }
 
 async function deletePerfume(perfume) {
@@ -314,47 +93,6 @@ async function deletePerfume(perfume) {
   }
 }
 
-async function deleteSelected() {
-  const selected =
-    table.value?.tableApi?.getFilteredSelectedRowModel().rows || [];
-
-  if (selected.length === 0) {
-    toast.add({
-      title: "هیچ موردی انتخاب نشده",
-      color: "warning",
-    });
-    return;
-  }
-
-  if (
-    !confirm(`آیا مطمئن هستید که می‌خواهید ${selected.length} عطر را حذف کنید؟`)
-  ) {
-    return;
-  }
-
-  try {
-    await Promise.all(
-      selected.map((row) =>
-        $fetch(`/api/perfumes/${row.original.id}`, { method: "DELETE" })
-      )
-    );
-
-    toast.add({
-      title: "عطرها حذف شدند",
-      description: `${selected.length} عطر با موفقیت حذف شد`,
-      color: "success",
-    });
-
-    rowSelection.value = {};
-    refresh();
-  } catch (error) {
-    toast.add({
-      title: "خطا در حذف",
-      color: "error",
-    });
-  }
-}
-
 // Statistics
 const stats = computed(() => {
   const data = perfumes.value || [];
@@ -365,6 +103,31 @@ const stats = computed(() => {
     inStock: data.filter((p) => p.capacity > 5).length,
   };
 });
+
+// Helper to get category info
+const getCategoryInfo = (category) => {
+  const categoryMap = {
+    male: { label: "مردانه", color: "info" },
+    female: { label: "زنانه", color: "secondary" },
+    unisex: { label: "یونیسکس", color: "neutral" },
+  };
+  return categoryMap[category] || { label: category, color: "neutral" };
+};
+
+// Helper to get capacity info
+const getCapacityInfo = (capacity) => {
+  if (capacity === 0) {
+    return { color: "error", label: "ناموجود" };
+  } else if (capacity <= 5) {
+    return { color: "warning", label: `${capacity} عدد` };
+  }
+  return { color: "success", label: `${capacity} عدد` };
+};
+
+// Calculate final price with discount
+const getFinalPrice = (originalPrice, discountPercent = 0) => {
+  return originalPrice - (originalPrice * discountPercent) / 100;
+};
 </script>
 
 <template>
@@ -378,7 +141,12 @@ const stats = computed(() => {
         <p class="text-sm text-muted mt-1">لیست و مدیریت عطرهای فروشگاه</p>
       </div>
 
-      <UButton to="/add_perfume" color="primary" icon="i-lucide-plus" size="lg">
+      <UButton
+        to="/admin/perfumes/add"
+        color="primary"
+        icon="i-lucide-plus"
+        size="lg"
+      >
         افزودن عطر جدید
       </UButton>
     </div>
@@ -435,7 +203,7 @@ const stats = computed(() => {
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Use the extracted filter component -->
+      <!-- Filters -->
       <div class="lg:col-span-1">
         <ProductFilter
           :selected-category="selectedCategory"
@@ -448,7 +216,7 @@ const stats = computed(() => {
         />
       </div>
 
-      <!-- Main Table -->
+      <!-- Products Grid -->
       <div class="lg:col-span-3">
         <UCard>
           <template #header>
@@ -464,54 +232,182 @@ const stats = computed(() => {
                 size="md"
               />
 
-              <!-- Bulk Actions -->
-              <div class="flex items-center gap-2">
-                <UButton
-                  v-if="Object.keys(rowSelection).length > 0"
-                  color="error"
-                  variant="outline"
-                  icon="i-lucide-trash"
-                  size="sm"
-                  @click="deleteSelected"
-                >
-                  حذف انتخاب‌شده‌ها
-                </UButton>
-
-                <UButton
-                  color="neutral"
-                  variant="outline"
-                  icon="i-lucide-refresh-cw"
-                  size="sm"
-                  :loading="pending"
-                  @click="refresh"
-                >
-                  بروزرسانی
-                </UButton>
-              </div>
+              <!-- Refresh Button -->
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-refresh-cw"
+                size="sm"
+                :loading="pending"
+                @click="refresh"
+              >
+                بروزرسانی
+              </UButton>
             </div>
           </template>
 
-          <!-- Table -->
-          <UTable
-            ref="table"
-            v-model:row-selection="rowSelection"
-            :data="filteredData"
-            :columns="columns"
-            :loading="pending"
-            sticky
-            class="min-h-[400px]"
-          />
+          <!-- Loading State -->
+          <div
+            v-if="pending"
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"
+          >
+            <div v-for="n in 6" :key="n" class="space-y-3">
+              <USkeleton class="h-48 w-full rounded-lg" />
+              <USkeleton class="h-4 w-3/4" />
+              <USkeleton class="h-4 w-1/2" />
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="filteredData.length === 0" class="text-center py-12">
+            <UIcon
+              name="i-lucide-package-x"
+              class="size-16 text-gray-400 mx-auto mb-4"
+            />
+            <p class="text-gray-600 dark:text-gray-400 text-lg">
+              محصولی یافت نشد
+            </p>
+          </div>
+
+          <!-- Products Cards Grid -->
+          <div
+            v-else
+            class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 p-4"
+          >
+            <UCard
+              v-for="perfume in filteredData"
+              :key="perfume.id"
+              class="overflow-hidden hover:shadow-lg transition-shadow"
+            >
+              <!-- Image Section -->
+              <div
+                class="relative aspect-video overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
+              >
+                <img
+                  :src="perfume.image || '/placeholder.png'"
+                  :alt="perfume.name"
+                  class="w-full h-full object-cover"
+                />
+
+                <!-- Discount Badge -->
+                <UBadge
+                  v-if="perfume.discountPercent > 0"
+                  color="error"
+                  class="absolute top-2 right-2"
+                >
+                  {{ perfume.discountPercent }}% تخفیف
+                </UBadge>
+
+                <!-- Capacity Badge -->
+                <UBadge
+                  :color="getCapacityInfo(perfume.capacity).color"
+                  variant="subtle"
+                  class="absolute top-2 left-2"
+                >
+                  {{ getCapacityInfo(perfume.capacity).label }}
+                </UBadge>
+              </div>
+
+              <!-- Content Section -->
+              <div class="space-y-3 mt-4">
+                <!-- Title -->
+                <div>
+                  <h3
+                    class="font-semibold text-lg text-highlighted line-clamp-1"
+                  >
+                    {{ perfume.name }}
+                  </h3>
+                  <p class="text-xs text-muted">{{ perfume.slug }}</p>
+                </div>
+
+                <!-- Category & Brands -->
+                <div class="flex flex-wrap items-center gap-2">
+                  <UBadge
+                    :color="getCategoryInfo(perfume.category).color"
+                    variant="subtle"
+                    size="xs"
+                  >
+                    {{ getCategoryInfo(perfume.category).label }}
+                  </UBadge>
+
+                  <UBadge
+                    v-for="brand in perfume.brands || []"
+                    :key="brand.slug"
+                    color="neutral"
+                    variant="subtle"
+                    size="xs"
+                  >
+                    {{ brand.name }}
+                  </UBadge>
+                </div>
+
+                <!-- Price -->
+                <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div v-if="perfume.discountPercent > 0" class="space-y-1">
+                    <p class="text-lg font-bold text-success">
+                      {{
+                        getFinalPrice(
+                          perfume.originalPrice,
+                          perfume.discountPercent
+                        ).toLocaleString("fa-IR")
+                      }}
+                      تومان
+                    </p>
+                    <p class="text-sm text-muted line-through">
+                      {{ perfume.originalPrice.toLocaleString("fa-IR") }} تومان
+                    </p>
+                  </div>
+                  <p v-else class="text-lg font-bold text-highlighted">
+                    {{ perfume.originalPrice.toLocaleString("fa-IR") }} تومان
+                  </p>
+                </div>
+
+                <!-- Additional Info -->
+                <div class="flex items-center gap-3 text-xs text-muted pt-2">
+                  <div class="flex items-center gap-1">
+                    <UIcon name="i-lucide-star" class="size-4" />
+                    <span>{{ perfume.rating || 0 }}</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <UIcon name="i-lucide-message-circle" class="size-4" />
+                    <span>{{ perfume.reviews || 0 }} نظر</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    <UIcon name="i-lucide-droplet" class="size-4" />
+                    <span>{{ perfume.capacity }} ml</span>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="grid grid-cols-2 gap-2 pt-3">
+                  <UButton
+                    color="primary"
+                    variant="outline"
+                    icon="i-lucide-edit"
+                    block
+                    @click="editPerfume(perfume)"
+                  >
+                    ویرایش
+                  </UButton>
+
+                  <UButton
+                    color="error"
+                    variant="outline"
+                    icon="i-lucide-trash"
+                    block
+                    @click="deletePerfume(perfume)"
+                  >
+                    حذف
+                  </UButton>
+                </div>
+              </div>
+            </UCard>
+          </div>
 
           <template #footer>
             <div class="flex items-center justify-between text-sm text-muted">
-              <span>
-                {{
-                  table?.tableApi?.getFilteredSelectedRowModel().rows.length ||
-                  0
-                }}
-                از {{ filteredData.length }} مورد انتخاب شده
-              </span>
-              <span> {{ filteredData.length }} مورد نمایش داده شده </span>
+              <span>{{ filteredData.length }} مورد نمایش داده شده</span>
+              <span>از مجموع {{ stats.total }} عطر</span>
             </div>
           </template>
         </UCard>

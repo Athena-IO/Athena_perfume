@@ -109,3 +109,319 @@ Because `useFetch/useAsyncData` cache by key, navigating around your app and com
      - reuse cached result on client until you `refresh()` or change key/options.[[Which to use](https://stackoverflow.com/questions/76839341)][[custom cache support](https://github.com/nuxt/nuxt/pull/20747)]
 
 If you tell me your DB client (Prisma/Mongoose/etc.) and your perfume schema, I can adapt `server/api/perfumes.get.ts` more concretely to your setup.
+
+------
+
+<template>
+  <div class="p-4 sm:p-6">
+    <UContainer>
+      <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
+        <!-- Desktop Filters -->
+        <aside class="hidden lg:block lg:w-64 shrink-0">
+          <ProductFilter
+            :selectedCategory="selectedCategory"
+            :selectedBrands="selectedBrands"
+            :selectedSort="selectedSort"
+            :filtered-count="filteredProducts.length"
+            @update:category="selectedCategory = $event"
+            @update:brands="selectedBrands = $event"
+            @update:sort="selectedSort = $event"
+          />
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1">
+          <!-- Mobile Filter Button -->
+          <div class="lg:hidden mb-4">
+            <UDrawer
+              v-model:open="isFilterOpen"
+              direction="left"
+              title="فیلترها"
+            >
+              <UButton
+                label="نمایش فیلترها"
+                icon="i-lucide-filter"
+                color="neutral"
+                variant="outline"
+                block
+              />
+
+              <template #body>
+                <ProductFilter
+                  :selectedCategory="selectedCategory"
+                  :selectedBrands="selectedBrands"
+                  :selectedSort="selectedSort"
+                  :filtered-count="filteredProducts.length"
+                  @update:category="selectedCategory = $event"
+                  @update:brands="selectedBrands = $event"
+                  @update:sort="selectedSort = $event"
+                />
+              </template>
+
+              <template #footer>
+                <UButton
+                  label="نمایش نتایج"
+                  color="primary"
+                  block
+                  @click="isFilterOpen = false"
+                />
+              </template>
+            </UDrawer>
+          </div>
+
+          <!-- Loading State -->
+          <div
+            v-if="loading"
+            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
+          >
+            <div v-for="n in 8" :key="n" class="space-y-3">
+              <USkeleton class="h-64 w-full rounded-lg" />
+              <USkeleton class="h-4 w-3/4" />
+              <USkeleton class="h-4 w-1/2" />
+            </div>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="error" class="text-center py-12">
+            <UIcon
+              name="i-lucide-alert-circle"
+              class="size-16 text-red-400 mx-auto mb-4"
+            />
+            <p class="text-gray-600 dark:text-gray-400 text-lg mb-4">
+              خطا در بارگذاری محصولات
+            </p>
+            <UButton label="تلاش مجدد" color="primary" @click="fetchProducts" />
+          </div>
+
+          <!-- Product Grid -->
+          <div
+            v-else
+            class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
+          >
+            <ProductCard
+              v-for="product in visibleProducts"
+              :key="product.id"
+              :product="product"
+            />
+          </div>
+
+          <!-- Empty State -->
+          <div
+            v-if="!loading && filteredProducts.length === 0"
+            class="text-center py-12"
+          >
+            <UIcon
+              name="i-lucide-package-x"
+              class="size-16 text-gray-400 mx-auto mb-4"
+            />
+            <p class="text-gray-600 dark:text-gray-400 text-lg">
+              محصولی یافت نشد
+            </p>
+          </div>
+
+          <!-- Show more -->
+          <div
+            v-if="!loading && filteredProducts.length > 0"
+            ref="loadMoreRef"
+            class="flex justify-center mt-8"
+          >
+            <UButton
+              v-if="!allVisible"
+              color="primary"
+              variant="soft"
+              @click="showMore"
+            >
+              نمایش بیشتر
+            </UButton>
+            <p v-else class="text-sm text-gray-500">
+              همه محصولات نمایش داده شده‌اند
+            </p>
+          </div>
+        </div>
+      </div>
+    </UContainer>
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import ProductFilter from "~/components/ProductFilter.vue";
+import ProductCard from "~/components/ProductCard.vue";
+
+const props = defineProps({
+  category: {
+    type: String,
+    default: "all",
+  },
+  brand: {
+    type: String,
+    default: null,
+  },
+});
+
+// Filter drawer state for mobile
+const isFilterOpen = ref(false);
+
+// Initialize with props
+const selectedCategory = ref(props.category);
+const selectedBrands = ref(props.brand ? [props.brand] : []);
+const selectedSort = ref("none");
+
+// Watch for prop changes and update local state
+watch(
+  () => props.category,
+  (newCategory) => {
+    selectedCategory.value = newCategory;
+  },
+  { immediate: true }
+);
+
+watch(
+  () => props.brand,
+  (newBrand) => {
+    selectedBrands.value = newBrand ? [newBrand] : [];
+  },
+  { immediate: true }
+);
+
+// API state
+const products = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+// Fetch products from API
+async function fetchProducts() {
+  loading.value = true;
+  error.value = null;
+
+  try {
+    // Replace with your actual API endpoint
+    const response = await $fetch("/api/products");
+
+    // Sort by capacity: items with capacity > 0 first, then capacity = 0
+    products.value = response.sort((a, b) => {
+      if (a.capacity > 0 && b.capacity === 0) return -1;
+      if (a.capacity === 0 && b.capacity > 0) return 1;
+      return 0;
+    });
+  } catch (err) {
+    error.value = err;
+    console.error("Error fetching products:", err);
+  } finally {
+    loading.value = false;
+  }
+}
+
+// Fetch products on mount
+onMounted(() => {
+  fetchProducts();
+});
+
+// full filtered list (by category/brand/sort)
+const filteredProducts = computed(() => {
+  let list = [...products.value];
+
+  // Filter by category
+  if (selectedCategory.value && selectedCategory.value !== "all") {
+    list = list.filter((p) => p.category === selectedCategory.value);
+  }
+
+  // Filter by brands (multiple selection)
+  if (selectedBrands.value.length > 0) {
+    list = list.filter((p) => selectedBrands.value.includes(p.brand));
+  }
+
+  // Sort (keeping capacity-based sorting as base)
+  if (selectedSort.value === "price_low_high") {
+    list.sort((a, b) => {
+      // Keep capacity sorting, then price
+      if (a.capacity > 0 && b.capacity === 0) return -1;
+      if (a.capacity === 0 && b.capacity > 0) return 1;
+      return a.price - b.price;
+    });
+  } else if (selectedSort.value === "price_high_low") {
+    list.sort((a, b) => {
+      // Keep capacity sorting, then price
+      if (a.capacity > 0 && b.capacity === 0) return -1;
+      if (a.capacity === 0 && b.capacity > 0) return 1;
+      return b.price - a.price;
+    });
+  } else {
+    // Default: capacity-based sorting only
+    list.sort((a, b) => {
+      if (a.capacity > 0 && b.capacity === 0) return -1;
+      if (a.capacity === 0 && b.capacity > 0) return 1;
+      return 0;
+    });
+  }
+
+  return list;
+});
+
+// pagination state
+const pageSize = 12;
+const visibleCount = ref(pageSize);
+
+// reset visibleCount when filters change
+watch(
+  () => [
+    selectedCategory.value,
+    selectedBrands.value.slice(),
+    selectedSort.value,
+  ],
+  () => {
+    visibleCount.value = pageSize;
+  }
+);
+
+// only show first visibleCount items
+const visibleProducts = computed(() =>
+  filteredProducts.value.slice(0, visibleCount.value)
+);
+
+const allVisible = computed(
+  () => visibleCount.value >= filteredProducts.value.length
+);
+
+function showMore() {
+  if (!allVisible.value) {
+    visibleCount.value += pageSize;
+  }
+}
+
+// optional: auto-load when button is in view
+const loadMoreRef = ref(null);
+let observer;
+
+onMounted(() => {
+  if (typeof window === "undefined") return;
+
+  observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !allVisible.value) {
+          showMore();
+        }
+      });
+    },
+    {
+      root: null,
+      threshold: 0.1,
+    }
+  );
+
+  // Use nextTick to ensure DOM is ready
+  nextTick(() => {
+    if (loadMoreRef.value) {
+      observer.observe(loadMoreRef.value);
+    }
+  });
+});
+
+onBeforeUnmount(() => {
+  if (observer && loadMoreRef.value) {
+    observer.unobserve(loadMoreRef.value);
+  }
+});
+</script>
+product list final resault

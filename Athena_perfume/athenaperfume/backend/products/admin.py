@@ -32,14 +32,31 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ['name', 'group']
     list_filter = ['group']
     search_fields = ['name']
-
+# products/admin.py
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    list_display = ['name', 'brand', 'gender', 'is_active', 'created_at']
-    list_filter = ['brand', 'category', 'gender', 'is_active']
-    search_fields = ['name', 'brand__name']
+    list_display = ['name', 'brand', 'gender', 'capacity', 'sold', 'discount_percent', 'is_active']
+    list_filter = ['brand', 'category', 'gender', 'is_active', 'discount_percent']
+    search_fields = ['name', 'brand__name', 'similar_perfume']
     filter_horizontal = ['tags']
 
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('name', 'slug', 'brand', 'category', 'gender', 'image')
+        }),
+        ('قیمت و تخفیف', {
+            'fields': ('original_price', 'discount_percent', 'badge_text', 'badge_color')
+        }),
+        ('مشخصات عطر', {
+            'fields': ('perfume_type', 'seasons', 'volume', 'similar_perfume')
+        }),
+        ('موجودی و فروش', {
+            'fields': ('capacity', 'sold')
+        }),
+        ('سایر', {
+            'fields': ('description', 'additional_images', 'volume_options', 'tags', 'is_active')
+        }),
+    )
 
 @admin.register(PricingRule)
 class PricingRuleAdmin(admin.ModelAdmin):

@@ -58,6 +58,18 @@ class Product(models.Model):
     brand = models.ForeignKey(Brand, on_delete=models.SET_NULL, null=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='unisex')
+    original_price = models.DecimalField(max_digits=12, decimal_places=0, null=True, blank=True, help_text="قیمت اصلی (قبل از تخفیف)")
+    discount_percent = models.PositiveIntegerField(default=0, help_text="درصد تخفیف (0-100)")
+    badge_text = models.CharField(max_length=50, blank=True, help_text="متن برچسب مثل 'جدید' یا 'پرفروش'")
+    badge_color = models.CharField(max_length=20, default='primary', help_text="رنگ برچسب در فرانت")
+
+    similar_perfume = models.CharField(max_length=200, blank=True, help_text="نام عطر مشابه (مثلاً Bleu de Chanel)")
+    perfume_type = models.CharField(max_length=50, blank=True, help_text="نوع عطر: EDP, EDT, ...")
+    seasons = models.JSONField(default=list, blank=True, help_text='["spring", "summer", ...]')
+
+    volume = models.CharField(max_length=20, blank=True, help_text="مثلاً 100ml")
+    capacity = models.PositiveIntegerField(default=0, help_text="موجودی انبار")
+    sold = models.PositiveIntegerField(default=0, help_text="تعداد فروش رفته")
 
     description = models.TextField()
     #price = models.DecimalField(max_digits=10, decimal_places=0)

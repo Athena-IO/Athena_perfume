@@ -30,10 +30,26 @@ class ProductSerializer(serializers.ModelSerializer):
     brand_name = serializers.CharField(source='brand.name', read_only=True)
     category_name = serializers.CharField(source='category.name', read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+
     class Meta:
         model = Product
         fields = [
-            'id', 'slug', 'name', 'brand_name', 'category_name',
-             'old_price', 'image', 'additional_images',
-            'volume_options', 'stock', 'gender','tags', 'description'
+            'id', 'slug', 'name', 'brand', 'brand_name', 'category', 'category_name',
+            'gender', 'description', 'image', 'additional_images',
+            'volume_options', 'tags', 'is_active',
+
+            # فیلدهای جدید
+            'original_price', 'discount_percent', 'badge_text', 'badge_color',
+            'similar_perfume', 'perfume_type', 'seasons',
+            'volume', 'capacity', 'sold'
         ]
+
+    def validate_discount_percent(self, value):
+        if value < 0 or value > 100:
+            raise serializers.ValidationError("درصد تخفیف باید بین ۰ تا ۱۰۰ باشد.")
+        return value
+
+    def validate_capacity(self, value):
+        if value < 0:
+            raise serializers.ValidationError("موجودی نمی‌تواند منفی باشد.")
+        return value

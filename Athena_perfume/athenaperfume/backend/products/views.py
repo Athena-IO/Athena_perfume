@@ -11,10 +11,20 @@ from .utils import calculate_price
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.filter(is_active=True)
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAdminUser]
+    permission_classes = [permissions.IsAdminUser]  # فقط ادمین بتونه اضافه کنه
 
     def perform_create(self, serializer):
-        serializer.save()
+        # slug خودکار اگر خالی بود
+        if not serializer.validated_data.get('slug'):
+            name = serializer.validated_data['name']
+            slug = slugify(name, allow_unicode=True)
+            i = 1
+            while Product.objects.filter(slug=slug).exists():
+                slug = f"{slugify(name, allow_unicode=True)}-{i}"
+                i += 1
+            serializer.save(slug=slug)
+        else:
+            serializer.save()
 
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):

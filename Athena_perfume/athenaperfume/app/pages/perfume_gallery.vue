@@ -11,6 +11,103 @@ const {
   pending,
 } = await useFetch("/api/perfumes", {
   lazy: true,
+  // Add default data for when API is not available
+  // remember to delete///
+  default: () => [
+    {
+      id: 1,
+      name: "عود شرقی لاکچری",
+      slug: "oud-sharqi-luxury",
+      category: "male",
+      brands: [
+        { name: "عربیان", slug: "arabian" },
+        { name: "لاکچری", slug: "luxury" },
+      ],
+      originalPrice: 2500000,
+      discountPercent: 15,
+      capacity: 50,
+      image:
+        "https://images.unsplash.com/photo-1541643600914-78b084683601?w=400&h=300&fit=crop",
+      rating: 4.5,
+      reviews: 23,
+      description: "عطری خاص با رایحه عود اصیل و ماندگار",
+    },
+    {
+      id: 2,
+      name: "گل رز پاریسی",
+      slug: "rose-parisienne",
+      category: "female",
+      brands: [{ name: "پاریس", slug: "paris" }],
+      originalPrice: 1800000,
+      discountPercent: 0,
+      capacity: 3,
+      image:
+        "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=400&h=300&fit=crop",
+      rating: 4.8,
+      reviews: 45,
+      description: "عطری رمانتیک با عطر گل رز طبیعی",
+    },
+    {
+      id: 3,
+      name: "وانیل اسپایسی",
+      slug: "vanilla-spicy",
+      category: "unisex",
+      brands: [{ name: "فرانسه", slug: "france" }],
+      originalPrice: 3200000,
+      discountPercent: 20,
+      capacity: 0,
+      image:
+        "https://images.unsplash.com/photo-1563170351-be82bc888aa4?w=400&h=300&fit=crop",
+      rating: 4.2,
+      reviews: 12,
+      description: "ترکیبی از وانیل شیرین و ادویه‌های گرم",
+    },
+    {
+      id: 4,
+      name: "چوب صندل هندی",
+      slug: "sandalwood-indian",
+      category: "male",
+      brands: [{ name: "هند", slug: "india" }],
+      originalPrice: 2800000,
+      discountPercent: 10,
+      capacity: 12,
+      image:
+        "https://images.unsplash.com/photo-1588405748880-12d1d2a59c75?w=400&h=300&fit=crop",
+      rating: 4.6,
+      reviews: 34,
+      description: "عطر چوب صندل اصیل هندی با ماندگاری بالا",
+    },
+    {
+      id: 5,
+      name: "مشک عربی",
+      slug: "musk-arabic",
+      category: "unisex",
+      brands: [{ name: "عربستان", slug: "saudi" }],
+      originalPrice: 4500000,
+      discountPercent: 25,
+      capacity: 8,
+      image:
+        "https://images.unsplash.com/photo-1587017539504-67cfbddac569?w=400&h=300&fit=crop",
+      rating: 4.9,
+      reviews: 67,
+      description: "مشک اصیل عربی با رایحه‌ای منحصر به فرد",
+    },
+    {
+      id: 6,
+      name: "لیلی گاردن",
+      slug: "lily-garden",
+      category: "female",
+      brands: [{ name: "ایتالیا", slug: "italy" }],
+      originalPrice: 2100000,
+      discountPercent: 5,
+      capacity: 20,
+      image:
+        "https://images.unsplash.com/photo-1594035910387-fea47794261f?w=400&h=300&fit=crop",
+      rating: 4.4,
+      reviews: 28,
+      description: "عطری تازه با رایحه گل لیلی",
+    },
+  ],
 });
 
 // Filter states

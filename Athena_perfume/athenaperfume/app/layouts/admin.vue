@@ -25,26 +25,44 @@
         />
       </template>
 
-      <!-- Footer with logout -->
+      <!-- Footer with dark mode toggle and logout -->
       <template #footer="{ collapsed }">
-        <UButton
-          icon="i-lucide-log-out"
-          :label="collapsed ? undefined : 'خروج'"
-          color="error"
-          variant="ghost"
-          block
-          @click="handleLogout"
-        />
+        <div class="space-y-2">
+          <!-- Dark Mode Toggle -->
+          <UColorModeButton
+            :label="collapsed ? undefined : 'تغییر تم'"
+            variant="ghost"
+            block
+          />
+
+          <!-- Logout Button -->
+          <UButton
+            icon="i-lucide-log-out"
+            :label="collapsed ? undefined : 'خروج'"
+            color="error"
+            variant="ghost"
+            block
+            @click="handleLogout"
+          />
+        </div>
       </template>
     </UDashboardSidebar>
 
     <!-- Main content area -->
-    <UDashboardPanel>
+    <UDashboardPanel grow>
       <template #header>
-        <UDashboardNavbar :title="pageTitle" />
+        <UDashboardNavbar :title="pageTitle">
+          <!-- Add color mode button in navbar as well -->
+          <template #right>
+            <UColorModeButton />
+          </template>
+        </UDashboardNavbar>
       </template>
 
-      <slot />
+      <!-- Add a scrollable wrapper -->
+      <div class="h-full overflow-y-auto">
+        <slot />
+      </div>
     </UDashboardPanel>
   </UDashboardGroup>
 </template>

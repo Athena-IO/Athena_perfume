@@ -1,5 +1,5 @@
 <template>
-  <div class="p-6">
+  <div class="p-6" dir="rtl">
     <UCard>
       <template #header>
         <div class="flex justify-between items-center gap-4">
@@ -37,6 +37,10 @@
           icon: 'i-heroicons-users',
           label: 'کاربری با این مشخصات یافت نشد',
         }"
+        :ui="{
+          th: 'text-right',
+          td: 'text-right',
+        }"
       >
         <template #role-cell="{ row }">
           <UBadge
@@ -46,6 +50,18 @@
           >
             {{ row.original.role }}
           </UBadge>
+        </template>
+
+        <template #purchaseValue-cell="{ row }">
+          <span class="font-medium">
+            {{ formatCurrency(row.original.purchaseValue) }}
+          </span>
+        </template>
+
+        <template #purchaseQuantity-cell="{ row }">
+          <span class="font-medium">
+            {{ row.original.purchaseQuantity }} عدد
+          </span>
         </template>
 
         <template #actions-cell="{ row }">
@@ -138,6 +154,15 @@ const pageSize = ref(20);
 
 const SECURITY_PASSWORD = "admin1234";
 
+// Format currency helper
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat("fa-IR", {
+    style: "currency",
+    currency: "IRR",
+    maximumFractionDigits: 0,
+  }).format(value);
+};
+
 // گزینه‌های فیلتر نقش
 const roleOptions = [
   { label: "همه", value: "all" },
@@ -168,210 +193,425 @@ const columns = [
     header: "نقش",
   },
   {
+    id: "purchaseValue",
+    accessorKey: "purchaseValue",
+    header: "ارزش خرید",
+  },
+  {
+    id: "purchaseQuantity",
+    accessorKey: "purchaseQuantity",
+    header: "تعداد خرید",
+  },
+  {
     id: "actions",
     header: "عملیات",
   },
 ];
 
-// داده‌های نمونه - 50 کاربر برای تست pagination
+// داده‌های نمونه با اطلاعات خرید
 const allUsers = ref([
   // Admins
-  { id: 101, username: "ali_admin", email: "ali@example.com", role: "admin" },
+  {
+    id: 101,
+    username: "ali_admin",
+    email: "ali@example.com",
+    role: "admin",
+    purchaseValue: 15000000,
+    purchaseQuantity: 25,
+  },
   {
     id: 105,
     username: "reza_manager",
     email: "reza@example.com",
     role: "admin",
+    purchaseValue: 20000000,
+    purchaseQuantity: 40,
   },
-  { id: 420, username: "admin_test", email: "test@example.com", role: "admin" },
+  {
+    id: 420,
+    username: "admin_test",
+    email: "test@example.com",
+    role: "admin",
+    purchaseValue: 5000000,
+    purchaseQuantity: 12,
+  },
   {
     id: 301,
     username: "mahdi_admin",
     email: "mahdi@example.com",
     role: "admin",
+    purchaseValue: 18000000,
+    purchaseQuantity: 35,
   },
   {
     id: 305,
     username: "hamid_admin",
     email: "hamid@example.com",
     role: "admin",
+    purchaseValue: 12000000,
+    purchaseQuantity: 28,
   },
   {
     id: 401,
     username: "zahra_admin",
     email: "zahra@example.com",
     role: "admin",
+    purchaseValue: 22000000,
+    purchaseQuantity: 45,
   },
   {
     id: 405,
     username: "hasan_admin",
     email: "hasan@example.com",
     role: "admin",
+    purchaseValue: 16000000,
+    purchaseQuantity: 32,
   },
   {
     id: 501,
     username: "maryam_admin",
     email: "maryam@example.com",
     role: "admin",
+    purchaseValue: 19000000,
+    purchaseQuantity: 38,
   },
   {
     id: 505,
     username: "javad_admin",
     email: "javad@example.com",
     role: "admin",
+    purchaseValue: 14000000,
+    purchaseQuantity: 30,
   },
   {
     id: 601,
     username: "fatemeh_admin",
     email: "fatemeh@example.com",
     role: "admin",
+    purchaseValue: 21000000,
+    purchaseQuantity: 42,
   },
 
   // Users
-  { id: 210, username: "sara_user", email: "sara@example.com", role: "user" },
+  {
+    id: 210,
+    username: "sara_user",
+    email: "sara@example.com",
+    role: "user",
+    purchaseValue: 3500000,
+    purchaseQuantity: 8,
+  },
   {
     id: 315,
     username: "mohammad_user",
     email: "mohammad@example.com",
     role: "user",
+    purchaseValue: 4200000,
+    purchaseQuantity: 10,
   },
-  { id: 525, username: "user_demo", email: "demo@example.com", role: "user" },
-  { id: 201, username: "amir_user", email: "amir@example.com", role: "user" },
-  { id: 202, username: "neda_user", email: "neda@example.com", role: "user" },
-  { id: 203, username: "arash_user", email: "arash@example.com", role: "user" },
+  {
+    id: 525,
+    username: "user_demo",
+    email: "demo@example.com",
+    role: "user",
+    purchaseValue: 2800000,
+    purchaseQuantity: 6,
+  },
+  {
+    id: 201,
+    username: "amir_user",
+    email: "amir@example.com",
+    role: "user",
+    purchaseValue: 5600000,
+    purchaseQuantity: 14,
+  },
+  {
+    id: 202,
+    username: "neda_user",
+    email: "neda@example.com",
+    role: "user",
+    purchaseValue: 3200000,
+    purchaseQuantity: 7,
+  },
+  {
+    id: 203,
+    username: "arash_user",
+    email: "arash@example.com",
+    role: "user",
+    purchaseValue: 4800000,
+    purchaseQuantity: 11,
+  },
   {
     id: 204,
     username: "niloofar_user",
     email: "niloofar@example.com",
     role: "user",
+    purchaseValue: 6200000,
+    purchaseQuantity: 15,
   },
-  { id: 205, username: "pouya_user", email: "pouya@example.com", role: "user" },
+  {
+    id: 205,
+    username: "pouya_user",
+    email: "pouya@example.com",
+    role: "user",
+    purchaseValue: 3900000,
+    purchaseQuantity: 9,
+  },
   {
     id: 206,
     username: "shirin_user",
     email: "shirin@example.com",
     role: "user",
+    purchaseValue: 5100000,
+    purchaseQuantity: 12,
   },
   {
     id: 207,
     username: "kamran_user",
     email: "kamran@example.com",
     role: "user",
+    purchaseValue: 4500000,
+    purchaseQuantity: 10,
   },
-  { id: 208, username: "leila_user", email: "leila@example.com", role: "user" },
+  {
+    id: 208,
+    username: "leila_user",
+    email: "leila@example.com",
+    role: "user",
+    purchaseValue: 3700000,
+    purchaseQuantity: 8,
+  },
   {
     id: 209,
     username: "behnam_user",
     email: "behnam@example.com",
     role: "user",
+    purchaseValue: 5400000,
+    purchaseQuantity: 13,
   },
   {
     id: 211,
     username: "azadeh_user",
     email: "azadeh@example.com",
     role: "user",
+    purchaseValue: 2900000,
+    purchaseQuantity: 6,
   },
   {
     id: 212,
     username: "mehran_user",
     email: "mehran@example.com",
     role: "user",
+    purchaseValue: 4100000,
+    purchaseQuantity: 9,
   },
-  { id: 213, username: "nasim_user", email: "nasim@example.com", role: "user" },
+  {
+    id: 213,
+    username: "nasim_user",
+    email: "nasim@example.com",
+    role: "user",
+    purchaseValue: 6800000,
+    purchaseQuantity: 16,
+  },
   {
     id: 214,
     username: "davood_user",
     email: "davood@example.com",
     role: "user",
+    purchaseValue: 3300000,
+    purchaseQuantity: 7,
   },
-  { id: 215, username: "sogol_user", email: "sogol@example.com", role: "user" },
-  { id: 216, username: "saeed_user", email: "saeed@example.com", role: "user" },
+  {
+    id: 215,
+    username: "sogol_user",
+    email: "sogol@example.com",
+    role: "user",
+    purchaseValue: 5900000,
+    purchaseQuantity: 14,
+  },
+  {
+    id: 216,
+    username: "saeed_user",
+    email: "saeed@example.com",
+    role: "user",
+    purchaseValue: 4400000,
+    purchaseQuantity: 10,
+  },
   {
     id: 217,
     username: "parisa_user",
     email: "parisa@example.com",
     role: "user",
+    purchaseValue: 3600000,
+    purchaseQuantity: 8,
   },
-  { id: 218, username: "vahid_user", email: "vahid@example.com", role: "user" },
-  { id: 219, username: "elnaz_user", email: "elnaz@example.com", role: "user" },
-  { id: 220, username: "omid_user", email: "omid@example.com", role: "user" },
-  { id: 221, username: "sima_user", email: "sima@example.com", role: "user" },
+  {
+    id: 218,
+    username: "vahid_user",
+    email: "vahid@example.com",
+    role: "user",
+    purchaseValue: 5200000,
+    purchaseQuantity: 12,
+  },
+  {
+    id: 219,
+    username: "elnaz_user",
+    email: "elnaz@example.com",
+    role: "user",
+    purchaseValue: 2700000,
+    purchaseQuantity: 5,
+  },
+  {
+    id: 220,
+    username: "omid_user",
+    email: "omid@example.com",
+    role: "user",
+    purchaseValue: 4700000,
+    purchaseQuantity: 11,
+  },
+  {
+    id: 221,
+    username: "sima_user",
+    email: "sima@example.com",
+    role: "user",
+    purchaseValue: 3400000,
+    purchaseQuantity: 7,
+  },
   {
     id: 222,
     username: "kourosh_user",
     email: "kourosh@example.com",
     role: "user",
+    purchaseValue: 6100000,
+    purchaseQuantity: 15,
   },
-  { id: 223, username: "mina_user", email: "mina@example.com", role: "user" },
-  { id: 224, username: "navid_user", email: "navid@example.com", role: "user" },
+  {
+    id: 223,
+    username: "mina_user",
+    email: "mina@example.com",
+    role: "user",
+    purchaseValue: 3800000,
+    purchaseQuantity: 9,
+  },
+  {
+    id: 224,
+    username: "navid_user",
+    email: "navid@example.com",
+    role: "user",
+    purchaseValue: 5500000,
+    purchaseQuantity: 13,
+  },
   {
     id: 225,
     username: "yasmin_user",
     email: "yasmin@example.com",
     role: "user",
+    purchaseValue: 4300000,
+    purchaseQuantity: 10,
   },
-  { id: 226, username: "babak_user", email: "babak@example.com", role: "user" },
+  {
+    id: 226,
+    username: "babak_user",
+    email: "babak@example.com",
+    role: "user",
+    purchaseValue: 3100000,
+    purchaseQuantity: 6,
+  },
   {
     id: 227,
     username: "nazanin_user",
     email: "nazanin@example.com",
     role: "user",
+    purchaseValue: 5800000,
+    purchaseQuantity: 14,
   },
-  { id: 228, username: "ramin_user", email: "ramin@example.com", role: "user" },
+  {
+    id: 228,
+    username: "ramin_user",
+    email: "ramin@example.com",
+    role: "user",
+    purchaseValue: 4600000,
+    purchaseQuantity: 11,
+  },
   {
     id: 229,
     username: "sepideh_user",
     email: "sepideh@example.com",
     role: "user",
+    purchaseValue: 3000000,
+    purchaseQuantity: 6,
   },
   {
     id: 230,
     username: "masoud_user",
     email: "masoud@example.com",
     role: "user",
+    purchaseValue: 5300000,
+    purchaseQuantity: 12,
   },
   {
     id: 231,
     username: "taraneh_user",
     email: "taraneh@example.com",
     role: "user",
+    purchaseValue: 4000000,
+    purchaseQuantity: 9,
   },
   {
     id: 232,
     username: "shahab_user",
     email: "shahab@example.com",
     role: "user",
+    purchaseValue: 6400000,
+    purchaseQuantity: 15,
   },
   {
     id: 233,
     username: "golnaz_user",
     email: "golnaz@example.com",
     role: "user",
+    purchaseValue: 3500000,
+    purchaseQuantity: 8,
   },
-  { id: 234, username: "ehsan_user", email: "ehsan@example.com", role: "user" },
+  {
+    id: 234,
+    username: "ehsan_user",
+    email: "ehsan@example.com",
+    role: "user",
+    purchaseValue: 5700000,
+    purchaseQuantity: 13,
+  },
   {
     id: 235,
     username: "mahnaz_user",
     email: "mahnaz@example.com",
     role: "user",
+    purchaseValue: 4200000,
+    purchaseQuantity: 10,
   },
   {
     id: 236,
     username: "farshad_user",
     email: "farshad@example.com",
     role: "user",
+    purchaseValue: 2600000,
+    purchaseQuantity: 5,
   },
   {
     id: 237,
     username: "roxana_user",
     email: "roxana@example.com",
     role: "user",
+    purchaseValue: 6000000,
+    purchaseQuantity: 14,
   },
   {
     id: 238,
     username: "soheil_user",
     email: "soheil@example.com",
     role: "user",
+    purchaseValue: 4900000,
+    purchaseQuantity: 11,
   },
 ]);
 

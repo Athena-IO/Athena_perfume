@@ -144,7 +144,7 @@ CORS_ALLOWED_ORIGINS = [
 CORS_ALLOW_CREDENTIALS = True
 
 from decouple import config
-SECRET_KEY = config('SECRET_KEY')
+SECRET_KEY = 'django-insecure-bs%h&wkms1y6nk0=c#*w8bf*=6(%ng=2$wl3_tp7csd@&!8#^&'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

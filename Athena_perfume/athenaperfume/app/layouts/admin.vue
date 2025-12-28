@@ -1,41 +1,39 @@
-<!-- layouts/admin.vue -->
 <template>
-  <UDashboardGroup>
-    <UDashboardSidebar collapsible resizable>
-      <!-- Header with account info -->
+  <UDashboardGroup :ui="groupUI">
+    <UDashboardSidebar collapsible resizable :ui="sidebarUI">
+      <!-- Your sidebar content remains the same -->
       <template #header="{ collapsed }">
-        <div v-if="!collapsed" class="flex items-center gap-3">
+        <div v-if="!collapsed" class="flex items-center gap-3 p-3">
           <UAvatar src="https://github.com/benjamincanac.png" size="sm" />
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-medium truncate">Admin Name</p>
-            <p class="text-xs text-muted truncate">admin@example.com</p>
+            <p class="text-sm font-medium truncate" style="color: #1a0a0c">
+              نام ادمین
+            </p>
+            <p class="text-xs truncate" style="color: #1a0a0c">
+              admin@example.com
+            </p>
           </div>
         </div>
         <UAvatar v-else src="https://github.com/benjamincanac.png" size="sm" />
       </template>
 
-      <!-- Navigation Menu -->
       <template #default="{ collapsed }">
         <UNavigationMenu
           :collapsed="collapsed"
           :items="menuItems"
           orientation="vertical"
           highlight
-          color="primary"
+          :ui="navigationUI"
         />
       </template>
 
-      <!-- Footer with dark mode toggle and logout -->
       <template #footer="{ collapsed }">
-        <div class="space-y-2">
-          <!-- Dark Mode Toggle -->
+        <div class="space-y-2 p-3">
           <UColorModeButton
             :label="collapsed ? undefined : 'تغییر تم'"
             variant="ghost"
             block
           />
-
-          <!-- Logout Button -->
           <UButton
             icon="i-lucide-log-out"
             :label="collapsed ? undefined : 'خروج'"
@@ -48,19 +46,16 @@
       </template>
     </UDashboardSidebar>
 
-    <!-- Main content area -->
-    <UDashboardPanel grow>
+    <UDashboardPanel grow :ui="panelUI">
       <template #header>
-        <UDashboardNavbar :title="pageTitle">
-          <!-- Add color mode button in navbar as well -->
+        <UDashboardNavbar :title="pageTitle" :ui="navbarUI">
           <template #right>
             <UColorModeButton />
           </template>
         </UDashboardNavbar>
       </template>
 
-      <!-- Add a scrollable wrapper -->
-      <div class="h-full overflow-y-auto">
+      <div class="h-full overflow-y-auto custom-scrollbar bg-white">
         <slot />
       </div>
     </UDashboardPanel>
@@ -70,12 +65,44 @@
 <script setup>
 const route = useRoute();
 
-// Page title based on current route
+// Add this UI config to reverse the flex direction
+const groupUI = {
+  base: "flex-row-reverse", // This will put the sidebar on the right
+};
+
+// Rest of your existing UI customizations
+const sidebarUI = {
+  root: "bg-[#D8CFC4] border-[#D8CFC4]",
+  body: "bg-[#D8CFC4]",
+  header: "bg-[#D8CFC4] border-b border-[#D8CFC4]",
+  footer: "bg-[#D8CFC4] border-t border-[#D8CFC4]",
+};
+
+const navigationUI = {
+  root: "bg-[#D8CFC4]",
+  item: {
+    base: "text-[#1A0A0C] hover:bg-[#3B0510]/10",
+    active: "bg-[#3B0510]/10 text-[#3B0510]",
+    inactive: "text-[#1A0A0C]",
+  },
+};
+
+const navbarUI = {
+  root: "bg-[#D8CFC4] border-b border-[#D8CFC4]",
+  title: "text-[#1A0A0C]",
+};
+
+const panelUI = {
+  root: "bg-white",
+  body: "bg-white",
+};
+
+// Your existing computed properties and functions...
 const pageTitle = computed(() => {
   const titles = {
     "/admin": "داشبورد",
-    "/admin/products": "مدیریت محصولات",
-    "/admin/products/add": "افزودن محصول",
+    "/admin/perfumes": "مدیریت عطرها",
+    "/admin/perfumes/add": "افزودن عطر",
     "/admin/orders": "سفارشات",
     "/admin/users": "کاربران",
     "/admin/settings": "تنظیمات",
@@ -83,7 +110,6 @@ const pageTitle = computed(() => {
   return titles[route.path] || "پنل مدیریت";
 });
 
-// Menu items with routes
 const menuItems = computed(() => [
   [
     {
@@ -93,22 +119,22 @@ const menuItems = computed(() => [
       active: route.path === "/admin",
     },
     {
-      label: "محصولات",
-      icon: "i-lucide-package",
+      label: "عطرها",
+      icon: "i-lucide-sparkles",
       badge: "45",
-      defaultOpen: route.path.startsWith("/admin/products"),
+      defaultOpen: route.path.startsWith("/admin/perfumes"),
       children: [
         {
-          label: "همه محصولات",
-          description: "مشاهده و مدیریت محصولات",
+          label: "همه عطرها",
+          description: "مشاهده و مدیریت عطرها",
           icon: "i-lucide-list",
-          to: "/admin/products",
+          to: "/admin/perfumes",
         },
         {
-          label: "افزودن محصول",
-          description: "افزودن محصول جدید",
+          label: "افزودن عطر",
+          description: "افزودن عطر جدید",
           icon: "i-lucide-plus-circle",
-          to: "/admin/products/add",
+          to: "/admin/perfumes/add",
         },
       ],
     },
@@ -146,7 +172,25 @@ const menuItems = computed(() => [
 ]);
 
 const handleLogout = () => {
-  // Add your logout logic here
   navigateTo("/login");
 };
 </script>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #d8cfc4;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #3b0510;
+}
+</style>

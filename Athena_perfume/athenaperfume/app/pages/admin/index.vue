@@ -1,17 +1,21 @@
 <!-- pages/admin/index.vue -->
 <template>
   <div class="p-6" dir="rtl">
-    <h1 class="text-2xl font-bold mb-6">داشبورد</h1>
+    <h1 class="text-2xl font-bold mb-6" style="color: #1a0a0c">داشبورد</h1>
 
     <!-- Stats Cards with Comparison -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
       <!-- Revenue Card -->
-      <UCard>
+      <UCard class="custom-card-bg">
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-trending-up" class="size-5" />
-              <span>درآمد</span>
+              <UIcon
+                name="i-lucide-trending-up"
+                class="size-5"
+                style="color: #1a0a0c"
+              />
+              <span style="color: #1a0a0c">درآمد</span>
             </div>
             <UBadge
               :color="revenueChange >= 0 ? 'success' : 'error'"
@@ -30,20 +34,26 @@
           </div>
         </template>
         <div>
-          <p class="text-3xl font-bold">{{ formatCurrency(currentRevenue) }}</p>
-          <p class="text-sm text-muted mt-1">
+          <p class="text-3xl font-bold" style="color: #1a0a0c">
+            {{ formatCurrency(currentRevenue) }}
+          </p>
+          <p class="text-sm mt-1" style="color: #1a0a0c">
             مقایسه با ماه قبل: {{ formatCurrency(previousRevenue) }}
           </p>
         </div>
       </UCard>
 
       <!-- Orders Card -->
-      <UCard>
+      <UCard class="custom-card-bg">
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-shopping-cart" class="size-5" />
-              <span>سفارشات</span>
+              <UIcon
+                name="i-lucide-shopping-cart"
+                class="size-5"
+                style="color: #1a0a0c"
+              />
+              <span style="color: #1a0a0c">سفارشات</span>
             </div>
             <UBadge
               :color="ordersChange >= 0 ? 'success' : 'error'"
@@ -62,20 +72,26 @@
           </div>
         </template>
         <div>
-          <p class="text-3xl font-bold">{{ currentOrders }}</p>
-          <p class="text-sm text-muted mt-1">
+          <p class="text-3xl font-bold" style="color: #1a0a0c">
+            {{ currentOrders }}
+          </p>
+          <p class="text-sm mt-1" style="color: #1a0a0c">
             مقایسه با ماه قبل: {{ previousOrders }}
           </p>
         </div>
       </UCard>
 
       <!-- Users Card -->
-      <UCard>
+      <UCard class="custom-card-bg">
         <template #header>
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-users" class="size-5" />
-              <span>کاربران</span>
+              <UIcon
+                name="i-lucide-users"
+                class="size-5"
+                style="color: #1a0a0c"
+              />
+              <span style="color: #1a0a0c">کاربران</span>
             </div>
             <UBadge
               :color="usersChange >= 0 ? 'success' : 'error'"
@@ -92,10 +108,10 @@
           </div>
         </template>
         <div>
-          <p class="text-3xl font-bold">
+          <p class="text-3xl font-bold" style="color: #1a0a0c">
             {{ currentUsers.toLocaleString("fa-IR") }}
           </p>
-          <p class="text-sm text-muted mt-1">
+          <p class="text-sm mt-1" style="color: #1a0a0c">
             مقایسه با ماه قبل: {{ previousUsers.toLocaleString("fa-IR") }}
           </p>
         </div>
@@ -105,11 +121,17 @@
     <!-- Top Perfumes and Monthly Revenue Side by Side -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
       <!-- Top Perfumes Section -->
-      <UCard>
+      <UCard class="custom-card-bg">
         <template #header>
           <div class="flex items-center gap-2">
-            <UIcon name="i-lucide-flame" class="size-5" />
-            <span class="font-semibold">پرفروش‌ترین عطرها</span>
+            <UIcon
+              name="i-lucide-flame"
+              class="size-5"
+              style="color: #1a0a0c"
+            />
+            <span class="font-semibold" style="color: #1a0a0c"
+              >پرفروش‌ترین عطرها</span
+            >
           </div>
         </template>
 
@@ -117,22 +139,29 @@
           <div
             v-for="(perfume, index) in topPerfumes"
             :key="perfume.id"
-            class="flex items-center justify-between p-3 rounded-lg bg-elevated/50 hover:bg-elevated transition-colors"
+            class="flex items-center justify-between p-3 rounded-lg hover:opacity-90 transition-colors custom-item-bg"
           >
             <div class="flex items-center gap-3">
               <div
-                class="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold"
+                class="flex items-center justify-center w-8 h-8 rounded-full font-bold"
+                style="background-color: #3b0510; color: white"
               >
                 {{ index + 1 }}
               </div>
               <div>
-                <p class="font-medium">{{ perfume.name }}</p>
-                <p class="text-sm text-muted">{{ perfume.brand }}</p>
+                <p class="font-medium" style="color: #1a0a0c">
+                  {{ perfume.name }}
+                </p>
+                <p class="text-sm" style="color: #1a0a0c">
+                  {{ perfume.brand }}
+                </p>
               </div>
             </div>
             <div class="text-left">
-              <p class="font-semibold">{{ perfume.soldCount }} فروش</p>
-              <p class="text-sm text-muted">
+              <p class="font-semibold" style="color: #1a0a0c">
+                {{ perfume.soldCount }} فروش
+              </p>
+              <p class="text-sm" style="color: #1a0a0c">
                 {{ formatCurrency(perfume.revenue) }}
               </p>
             </div>
@@ -141,11 +170,17 @@
       </UCard>
 
       <!-- Monthly Revenue Chart -->
-      <UCard>
+      <UCard class="custom-card-bg">
         <template #header>
           <div class="flex items-center gap-2">
-            <UIcon name="i-lucide-bar-chart-3" class="size-5" />
-            <span class="font-semibold">درآمد ماهانه</span>
+            <UIcon
+              name="i-lucide-bar-chart-3"
+              class="size-5"
+              style="color: #1a0a0c"
+            />
+            <span class="font-semibold" style="color: #1a0a0c"
+              >درآمد ماهانه</span
+            >
           </div>
         </template>
 
@@ -155,30 +190,38 @@
             :key="month.month"
             class="flex-1 flex flex-col items-center gap-2"
           >
-            <div class="w-full bg-primary/20 rounded-t-lg relative group">
+            <div class="w-full rounded-t-lg relative group custom-chart-bg">
               <div
-                class="w-full bg-primary rounded-t-lg transition-all duration-300 hover:bg-primary/80"
-                :style="{ height: `${(month.amount / maxRevenue) * 200}px` }"
+                class="w-full rounded-t-lg transition-all duration-300 hover:opacity-80"
+                :style="{
+                  height: `${(month.amount / maxRevenue) * 200}px`,
+                  backgroundColor: '#3B0510',
+                }"
               >
                 <div
-                  class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-inverted text-inverted px-2 py-1 rounded text-xs whitespace-nowrap"
+                  class="absolute -top-8 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity px-2 py-1 rounded text-xs whitespace-nowrap"
+                  style="background-color: #3b0510; color: white"
                 >
                   {{ formatCurrency(month.amount) }}
                 </div>
               </div>
             </div>
-            <span class="text-xs text-muted">{{ month.month }}</span>
+            <span class="text-xs" style="color: #1a0a0c">{{
+              month.month
+            }}</span>
           </div>
         </div>
       </UCard>
     </div>
 
     <!-- Latest Sold Products -->
-    <UCard>
+    <UCard class="custom-card-bg">
       <template #header>
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-clock" class="size-5" />
-          <span class="font-semibold">آخرین محصولات فروخته شده</span>
+          <UIcon name="i-lucide-clock" class="size-5" style="color: #1a0a0c" />
+          <span class="font-semibold" style="color: #1a0a0c"
+            >آخرین محصولات فروخته شده</span
+          >
         </div>
       </template>
 
@@ -392,3 +435,17 @@ function formatCurrency(amount: number): string {
 // const { data: monthlyRevenue } = await useFetch('/api/admin/monthly-revenue')
 // const { data: latestSoldProducts } = await useFetch('/api/admin/latest-sales')
 </script>
+
+<style scoped>
+.custom-card-bg {
+  background-color: #d8cfc4;
+}
+
+.custom-item-bg {
+  background-color: #e6ded3;
+}
+
+.custom-chart-bg {
+  background-color: #e6ded3;
+}
+</style>

@@ -1,114 +1,182 @@
 <template>
-  <div class="p-6" dir="rtl">
-    <UCard>
-      <template #header>
-        <div class="flex justify-between items-center gap-4">
-          <h2 class="text-xl font-bold">لیست کاربران</h2>
+  <div class="p-6">
+    <!-- Stats Cards at Top -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6" dir="rtl">
+      <!-- Total Customers -->
+      <UCard class="custom-card-bg">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-users"
+              class="size-5"
+              style="color: #1a0a0c"
+            />
+            <span style="color: #1a0a0c">کل مشتریان</span>
+          </div>
+        </template>
+        <div>
+          <p class="text-3xl font-bold" style="color: #1a0a0c">
+            {{ allUsers.length }}
+          </p>
+          <p class="text-sm mt-1" style="color: #1a0a0c">
+            تعداد کل کاربران ثبت شده
+          </p>
+        </div>
+      </UCard>
 
-          <!-- Search and Filter Section -->
-          <div class="flex gap-2 items-center">
-            <!-- Search by ID -->
-            <div class="w-48">
-              <UInput
-                v-model="searchId"
-                type="number"
-                placeholder="جستجو با شناسه (ID)..."
-                icon="i-heroicons-magnifying-glass"
+      <!-- New Customers This Week -->
+      <UCard class="custom-card-bg">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-user-plus"
+              class="size-5"
+              style="color: #1a0a0c"
+            />
+            <span style="color: #1a0a0c">مشتریان جدید این هفته</span>
+          </div>
+        </template>
+        <div>
+          <p class="text-3xl font-bold" style="color: #1a0a0c">
+            {{ newCustomersThisWeek }}
+          </p>
+          <p class="text-sm mt-1" style="color: #1a0a0c">
+            کاربران ثبت نام شده در ۷ روز گذشته
+          </p>
+        </div>
+      </UCard>
+
+      <!-- Active Users (Recent Purchases) -->
+      <UCard class="custom-card-bg">
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon
+              name="i-heroicons-shopping-bag"
+              class="size-5"
+              style="color: #1a0a0c"
+            />
+            <span style="color: #1a0a0c">کاربران فعال</span>
+          </div>
+        </template>
+        <div>
+          <p class="text-3xl font-bold" style="color: #1a0a0c">
+            {{ activeUsers }}
+          </p>
+          <p class="text-sm mt-1" style="color: #1a0a0c">
+            خرید در ۲ هفته تا ۱ ماه اخیر
+          </p>
+        </div>
+      </UCard>
+    </div>
+
+    <!-- Users Table -->
+    <div dir="rtl">
+      <UCard class="custom-card-bg">
+        <template #header>
+          <div class="flex justify-between items-center gap-4">
+            <h2 class="text-xl font-bold" style="color: #1a0a0c">
+              لیست کاربران
+            </h2>
+
+            <!-- Search and Filter Section -->
+            <div class="flex gap-2 items-center">
+              <!-- Search by ID -->
+              <div class="w-48">
+                <UInput
+                  v-model="searchId"
+                  type="number"
+                  placeholder="جستجو با شناسه (ID)..."
+                  icon="i-heroicons-magnifying-glass"
+                  size="sm"
+                />
+              </div>
+
+              <!-- Role Filter -->
+              <USelectMenu
+                v-model="selectedRole"
+                :items="roleOptions"
+                value-key="value"
                 size="sm"
+                class="w-40"
               />
             </div>
+          </div>
+        </template>
 
-            <!-- Role Filter -->
-            <USelectMenu
-              v-model="selectedRole"
-              :items="roleOptions"
-              value-key="value"
+        <UTable
+          :data="paginatedUsers"
+          :columns="columns"
+          :empty-state="{
+            icon: 'i-heroicons-users',
+            label: 'کاربری با این مشخصات یافت نشد',
+          }"
+          :ui="tableUI"
+        >
+          <template #role-cell="{ row }">
+            <UBadge
+              :color="row.original.role === 'admin' ? 'primary' : 'neutral'"
+              variant="subtle"
               size="sm"
-              class="w-40"
+            >
+              {{ row.original.role }}
+            </UBadge>
+          </template>
+
+          <template #purchaseValue-cell="{ row }">
+            <span class="font-medium" style="color: #1a0a0c">
+              {{ formatCurrency(row.original.purchaseValue) }}
+            </span>
+          </template>
+
+          <template #purchaseQuantity-cell="{ row }">
+            <span class="font-medium" style="color: #1a0a0c">
+              {{ row.original.purchaseQuantity }} عدد
+            </span>
+          </template>
+
+          <template #actions-cell="{ row }">
+            <UButton
+              color="error"
+              variant="ghost"
+              size="xs"
+              icon="i-heroicons-trash"
+              @click="openDelete(row.original.id)"
+            />
+          </template>
+        </UTable>
+
+        <!-- Pagination -->
+        <template #footer>
+          <div class="flex justify-between items-center px-4 py-3">
+            <div class="text-sm" style="color: #1a0a0c">
+              نمایش {{ startIndex + 1 }} تا {{ endIndex }} از
+              {{ totalItems }} کاربر
+            </div>
+            <UPagination
+              v-model:page="currentPage"
+              :total="totalItems"
+              :items-per-page="pageSize"
             />
           </div>
-        </div>
-      </template>
-
-      <UTable
-        :data="paginatedUsers"
-        :columns="columns"
-        :empty-state="{
-          icon: 'i-heroicons-users',
-          label: 'کاربری با این مشخصات یافت نشد',
-        }"
-        :ui="{
-          th: 'text-right',
-          td: 'text-right',
-        }"
-      >
-        <template #role-cell="{ row }">
-          <UBadge
-            :color="row.original.role === 'admin' ? 'primary' : 'neutral'"
-            variant="subtle"
-            size="sm"
-          >
-            {{ row.original.role }}
-          </UBadge>
         </template>
-
-        <template #purchaseValue-cell="{ row }">
-          <span class="font-medium">
-            {{ formatCurrency(row.original.purchaseValue) }}
-          </span>
-        </template>
-
-        <template #purchaseQuantity-cell="{ row }">
-          <span class="font-medium">
-            {{ row.original.purchaseQuantity }} عدد
-          </span>
-        </template>
-
-        <template #actions-cell="{ row }">
-          <UButton
-            color="error"
-            variant="ghost"
-            size="xs"
-            icon="i-heroicons-trash"
-            @click="openDelete(row.original.id)"
-          />
-        </template>
-      </UTable>
-
-      <!-- Pagination -->
-      <template #footer>
-        <div class="flex justify-between items-center px-4 py-3">
-          <div class="text-sm text-muted">
-            نمایش {{ startIndex + 1 }} تا {{ endIndex }} از
-            {{ totalItems }} کاربر
-          </div>
-          <UPagination
-            v-model:page="currentPage"
-            :total="totalItems"
-            :items-per-page="pageSize"
-          />
-        </div>
-      </template>
-    </UCard>
+      </UCard>
+    </div>
 
     <!-- Modal for Delete -->
-    <UModal
-      v-model:open="showModal"
-      title="حذف کاربر"
-      :ui="{
-        title: 'text-error',
-        footer: 'justify-end',
-      }"
-    >
+    <UModal v-model:open="showModal" :ui="modalUI">
+      <template #header>
+        <h3 class="text-lg font-semibold" style="color: #3b0510">حذف کاربر</h3>
+      </template>
+
       <template #body>
-        <div class="space-y-4">
-          <p>
+        <div class="space-y-4" dir="rtl">
+          <p style="color: #1a0a0c">
             آیا مطمئنید می‌خواهید کاربر
-            <strong class="text-highlighted">{{
+            <strong style="color: #3b0510">{{
               allUsers.find((u) => u.id === selectedId)?.username
             }}</strong>
             با شناسه
-            <strong class="text-highlighted">{{ selectedId }}</strong> را حذف
+            <strong style="color: #3b0510">{{ selectedId }}</strong> را حذف
             کنید؟
           </p>
 
@@ -120,19 +188,21 @@
             />
           </UFormField>
 
-          <div v-if="error" class="text-error text-sm">
+          <div v-if="error" class="text-sm" style="color: #dc2626">
             {{ error }}
           </div>
         </div>
       </template>
 
       <template #footer>
-        <UButton variant="outline" color="neutral" @click="closeModal">
-          لغو
-        </UButton>
-        <UButton color="error" :disabled="!password" @click="confirmDelete">
-          تایید حذف
-        </UButton>
+        <div class="flex justify-end gap-2">
+          <UButton variant="outline" color="neutral" @click="closeModal">
+            لغو
+          </UButton>
+          <UButton color="error" :disabled="!password" @click="confirmDelete">
+            تایید حذف
+          </UButton>
+        </div>
       </template>
     </UModal>
   </div>
@@ -153,6 +223,34 @@ const currentPage = ref(1);
 const pageSize = ref(20);
 
 const SECURITY_PASSWORD = "admin1234";
+
+definePageMeta({
+  layout: "admin",
+});
+
+// UI Customizations
+const tableUI = {
+  th: "text-right",
+  td: "text-right",
+};
+
+const modalUI = {
+  root: "bg-[#D8CFC4]",
+  header: "bg-[#D8CFC4] border-b border-[#D8CFC4]",
+  body: "bg-[#D8CFC4]",
+  footer: "bg-[#D8CFC4] border-t border-[#D8CFC4]",
+};
+
+// Stats calculations
+const newCustomersThisWeek = computed(() => {
+  // Mock calculation - Replace with actual date filtering
+  return 12;
+});
+
+const activeUsers = computed(() => {
+  // Mock calculation - Users with purchases in last 2 weeks to 1 month
+  return 28;
+});
 
 // Format currency helper
 const formatCurrency = (value) => {
@@ -693,3 +791,9 @@ const confirmDelete = async () => {
   }
 };
 </script>
+
+<style scoped>
+.custom-card-bg {
+  background-color: #d8cfc4;
+}
+</style>

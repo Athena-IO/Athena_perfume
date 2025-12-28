@@ -1,2 +1,62 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+
+/* Light mode customizations */
+:root {
+  /* Card backgrounds */
+  --ui-bg-elevated: #d8cfc4;
+  --ui-bg-muted: #e6ded3;
+
+  /* Main text color */
+  --ui-text: #1a0a0c;
+  --ui-text-highlighted: #1a0a0c;
+  --ui-text-dimmed: #1a0a0c;
+  --ui-text-muted: #1a0a0c;
+
+  /* Primary color */
+  --ui-primary: #3b0510;
+
+  /* Background color - WHITE for page background */
+  --ui-bg: #ffffff;
+}
+
+/* Force sidebar background color */
+[data-nuxt-ui] aside {
+  background-color: #d8cfc4 !important;
+}
+
+/* Force navbar background color */
+[data-nuxt-ui] header {
+  background-color: #d8cfc4 !important;
+}
+
+/* Navigation menu items text color */
+[data-nuxt-ui] nav a,
+[data-nuxt-ui] nav button {
+  color: #1a0a0c !important;
+}
+
+/* Navigation menu active/hover states */
+[data-nuxt-ui] nav a[aria-current="page"],
+[data-nuxt-ui] nav button[aria-current="page"],
+[data-nuxt-ui] nav a:hover,
+[data-nuxt-ui] nav button:hover {
+  background-color: rgba(59, 5, 16, 0.1) !important;
+  color: #3b0510 !important;
+}
+
+/* Badge in navigation */
+[data-nuxt-ui] nav .badge {
+  background-color: #3b0510 !important;
+  color: white !important;
+}
+
+/* Dashboard panel background - WHITE */
+[data-nuxt-ui] main {
+  background-color: #ffffff !important;
+}
+
+/* Move sidebar to right side */
+[data-nuxt-ui] > div[class*="inset-0"] {
+  flex-direction: row-reverse !important;
+}

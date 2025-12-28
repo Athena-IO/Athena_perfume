@@ -5,6 +5,9 @@ const toast = useToast();
 const router = useRouter();
 const { copy } = useClipboard();
 
+definePageMeta({
+  layout: "admin",
+});
 const {
   data: perfumes,
   refresh,
@@ -232,17 +235,19 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
     <!-- Header -->
     <div class="mb-6 flex items-center justify-between">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-default">
+        <h1 class="text-2xl sm:text-3xl font-bold" style="color: #1a0a0c">
           مدیریت عطرها
         </h1>
-        <p class="text-sm text-muted mt-1">لیست و مدیریت عطرهای فروشگاه</p>
+        <p class="text-sm mt-1" style="color: #1a0a0c">
+          لیست و مدیریت عطرهای فروشگاه
+        </p>
       </div>
 
       <UButton
         to="/admin/perfumes/add"
-        color="primary"
         icon="i-lucide-plus"
         size="lg"
+        style="background-color: #3b0510; color: white"
       >
         افزودن عطر جدید
       </UButton>
@@ -250,49 +255,58 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
 
     <!-- Statistics Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-      <UCard>
+      <UCard style="background-color: #d8cfc4">
         <div class="flex items-center gap-3">
-          <div class="p-3 rounded-lg bg-primary/10">
-            <UIcon name="i-lucide-package" class="size-6 text-primary" />
+          <div
+            class="p-3 rounded-lg"
+            style="background-color: rgba(59, 5, 16, 0.1)"
+          >
+            <UIcon
+              name="i-lucide-package"
+              class="size-6"
+              style="color: #3b0510"
+            />
           </div>
           <div>
-            <p class="text-sm text-muted">کل عطرها</p>
-            <p class="text-2xl font-bold text-highlighted">{{ stats.total }}</p>
+            <p class="text-sm" style="color: #1a0a0c">کل عطرها</p>
+            <p class="text-2xl font-bold" style="color: #1a0a0c">
+              {{ stats.total }}
+            </p>
           </div>
         </div>
       </UCard>
 
-      <UCard>
+      <UCard style="background-color: #d8cfc4">
         <div class="flex items-center gap-3">
           <div class="p-3 rounded-lg bg-success/10">
             <UIcon name="i-lucide-check-circle" class="size-6 text-success" />
           </div>
           <div>
-            <p class="text-sm text-muted">موجود</p>
+            <p class="text-sm" style="color: #1a0a0c">موجود</p>
             <p class="text-2xl font-bold text-success">{{ stats.inStock }}</p>
           </div>
         </div>
       </UCard>
 
-      <UCard>
+      <UCard style="background-color: #d8cfc4">
         <div class="flex items-center gap-3">
           <div class="p-3 rounded-lg bg-warning/10">
             <UIcon name="i-lucide-alert-triangle" class="size-6 text-warning" />
           </div>
           <div>
-            <p class="text-sm text-muted">کمبود موجودی</p>
+            <p class="text-sm" style="color: #1a0a0c">کمبود موجودی</p>
             <p class="text-2xl font-bold text-warning">{{ stats.lowStock }}</p>
           </div>
         </div>
       </UCard>
 
-      <UCard>
+      <UCard style="background-color: #d8cfc4">
         <div class="flex items-center gap-3">
           <div class="p-3 rounded-lg bg-error/10">
             <UIcon name="i-lucide-x-circle" class="size-6 text-error" />
           </div>
           <div>
-            <p class="text-sm text-muted">ناموجود</p>
+            <p class="text-sm" style="color: #1a0a0c">ناموجود</p>
             <p class="text-2xl font-bold text-error">{{ stats.outOfStock }}</p>
           </div>
         </div>
@@ -315,7 +329,7 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
 
       <!-- Products Grid -->
       <div class="lg:col-span-3">
-        <UCard>
+        <UCard style="background-color: #e6ded3">
           <template #header>
             <div
               class="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between"
@@ -359,11 +373,10 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
           <div v-else-if="filteredData.length === 0" class="text-center py-12">
             <UIcon
               name="i-lucide-package-x"
-              class="size-16 text-gray-400 mx-auto mb-4"
+              class="size-16 mx-auto mb-4"
+              style="color: #1a0a0c"
             />
-            <p class="text-gray-600 dark:text-gray-400 text-lg">
-              محصولی یافت نشد
-            </p>
+            <p class="text-lg" style="color: #1a0a0c">محصولی یافت نشد</p>
           </div>
 
           <!-- Products Cards Grid -->
@@ -375,10 +388,12 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
               v-for="perfume in filteredData"
               :key="perfume.id"
               class="overflow-hidden hover:shadow-lg transition-shadow"
+              style="background-color: #d8cfc4"
             >
               <!-- Image Section -->
               <div
-                class="relative aspect-video overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800"
+                class="relative aspect-video overflow-hidden rounded-lg"
+                style="background-color: rgba(26, 10, 12, 0.1)"
               >
                 <img
                   :src="perfume.image || '/placeholder.png'"
@@ -410,11 +425,14 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
                 <!-- Title -->
                 <div>
                   <h3
-                    class="font-semibold text-lg text-highlighted line-clamp-1"
+                    class="font-semibold text-lg line-clamp-1"
+                    style="color: #1a0a0c"
                   >
                     {{ perfume.name }}
                   </h3>
-                  <p class="text-xs text-muted">{{ perfume.slug }}</p>
+                  <p class="text-xs" style="color: #1a0a0c">
+                    {{ perfume.slug }}
+                  </p>
                 </div>
 
                 <!-- Category & Brands -->
@@ -439,7 +457,10 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
                 </div>
 
                 <!-- Price -->
-                <div class="pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div
+                  class="pt-2 border-t"
+                  style="border-color: rgba(26, 10, 12, 0.2)"
+                >
                   <div v-if="perfume.discountPercent > 0" class="space-y-1">
                     <p class="text-lg font-bold text-success">
                       {{
@@ -450,17 +471,20 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
                       }}
                       تومان
                     </p>
-                    <p class="text-sm text-muted line-through">
+                    <p class="text-sm line-through" style="color: #1a0a0c">
                       {{ perfume.originalPrice.toLocaleString("fa-IR") }} تومان
                     </p>
                   </div>
-                  <p v-else class="text-lg font-bold text-highlighted">
+                  <p v-else class="text-lg font-bold" style="color: #1a0a0c">
                     {{ perfume.originalPrice.toLocaleString("fa-IR") }} تومان
                   </p>
                 </div>
 
                 <!-- Additional Info -->
-                <div class="flex items-center gap-3 text-xs text-muted pt-2">
+                <div
+                  class="flex items-center gap-3 text-xs pt-2"
+                  style="color: #1a0a0c"
+                >
                   <div class="flex items-center gap-1">
                     <UIcon name="i-lucide-star" class="size-4" />
                     <span>{{ perfume.rating || 0 }}</span>
@@ -478,10 +502,10 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
                 <!-- Action Buttons -->
                 <div class="grid grid-cols-2 gap-2 pt-3">
                   <UButton
-                    color="primary"
                     variant="outline"
                     icon="i-lucide-edit"
                     block
+                    style="border-color: #3b0510; color: #3b0510"
                     @click="editPerfume(perfume)"
                   >
                     ویرایش
@@ -502,7 +526,10 @@ const getFinalPrice = (originalPrice, discountPercent = 0) => {
           </div>
 
           <template #footer>
-            <div class="flex items-center justify-between text-sm text-muted">
+            <div
+              class="flex items-center justify-between text-sm"
+              style="color: #1a0a0c"
+            >
               <span>{{ filteredData.length }} مورد نمایش داده شده</span>
               <span>از مجموع {{ stats.total }} عطر</span>
             </div>

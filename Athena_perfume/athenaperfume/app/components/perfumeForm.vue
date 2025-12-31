@@ -16,7 +16,7 @@ const props = defineProps({
   },
   mode: {
     type: String,
-    default: "add", // 'add' or 'edit'
+    default: "add",
     validator: (value) => ["add", "edit"].includes(value),
   },
 });
@@ -44,10 +44,12 @@ const state = reactive({
   volume: "",
   capacity: 0,
   sold: 0,
+  description: "", // Rich text HTML content
 });
 
 const showBrandModal = ref(false);
 const existingImageUrl = ref(null);
+const isSubmitting = ref(false);
 
 const stockStatus = computed(() => {
   if (state.capacity === 0) {
@@ -92,7 +94,7 @@ const seasonOptions = [
   { label: "چهار فصل", value: "all-season" },
 ];
 
-// Accordion items for better organization
+// Accordion items
 const accordionItems = computed(() => [
   {
     label: "اطلاعات اصلی",
@@ -104,6 +106,11 @@ const accordionItems = computed(() => [
     label: "مشخصات محصول",
     icon: "i-lucide-info",
     slot: "details",
+  },
+  {
+    label: "توضیحات کامل",
+    icon: "i-lucide-file-text",
+    slot: "description",
   },
   {
     label: "برچسب و تخفیف",
@@ -144,11 +151,9 @@ function validate(formState) {
   if (!formState.category) {
     errors.push({ name: "category", message: "دسته‌بندی الزامی است" });
   }
-  // Only require image for new perfumes
   if (props.mode === "add" && !formState.image) {
     errors.push({ name: "image", message: "لطفا یک تصویر انتخاب کنید" });
   }
-  // Validate image if provided
   if (formState.image) {
     if (formState.image.size > MAX_FILE_SIZE) {
       errors.push({
@@ -188,7 +193,6 @@ function validate(formState) {
 watch(
   () => state.name,
   (newName) => {
-    // Only auto-generate slug when adding new perfume and slug is empty
     if (props.mode === "add" && !state.slug && newName) {
       state.slug = newName
         .toLowerCase()
@@ -206,11 +210,17 @@ function onBrandSelect(brand) {
       id: brand.id,
       name: brand.name,
       slug: brand.slug,
+      image: brand.image,
     });
   }
 }
 
-// Load existing perfume data when in edit mode
+// Remove brand
+function removeBrand(brandId) {
+  state.brands = state.brands.filter((b) => b.id !== brandId);
+}
+
+// Load existing perfume data
 onMounted(() => {
   if (props.mode === "edit" && props.perfume) {
     Object.assign(state, {
@@ -229,9 +239,9 @@ onMounted(() => {
       volume: props.perfume.volume || "",
       capacity: props.perfume.capacity || 0,
       sold: props.perfume.sold || 0,
+      description: props.perfume.description || "",
     });
 
-    // Store existing image URL
     if (props.perfume.image) {
       existingImageUrl.value = props.perfume.image;
     }
@@ -239,51 +249,50 @@ onMounted(() => {
 });
 
 async function onSubmit(event) {
-  const seasonsText = event.data.seasons
-    .map((season) => {
-      const option = seasonOptions.find((s) => s.value === season);
-      return option ? option.label : season;
-    })
-    .join("، ");
+  if (isSubmitting.value) return;
 
-  const payload = {
-    slug: event.data.slug,
-    name: event.data.name,
-    originalPrice: event.data.originalPrice,
-    discountPercent: event.data.discountPercent,
-    category: event.data.category,
-    badgeText: event.data.badgeText || "",
-    badgeColor: event.data.badgeColor || "primary",
-    gender: event.data.gender,
-    brands: event.data.brands,
-    similar: event.data.similar || "",
-    type: event.data.type,
-    seasons: event.data.seasons,
-    seasonsText,
-    volume: event.data.volume,
-    capacity: event.data.capacity,
-    sold: event.data.sold || 0,
-  };
-
-  const formData = new FormData();
-  Object.entries(payload).forEach(([key, value]) => {
-    if (Array.isArray(value) || typeof value === "object") {
-      formData.append(key, JSON.stringify(value));
-    } else {
-      formData.append(key, String(value));
-    }
-  });
-
-  if (event.data.image) {
-    formData.append("image", event.data.image);
-  }
+  isSubmitting.value = true;
 
   try {
+    const seasonsText = event.data.seasons
+      .map((season) => {
+        const option = seasonOptions.find((s) => s.value === season);
+        return option ? option.label : season;
+      })
+      .join("، ");
+
+    const formData = new FormData();
+
+    // Add all fields
+    formData.append("name", event.data.name);
+    formData.append("slug", event.data.slug);
+    formData.append("originalPrice", event.data.originalPrice);
+    formData.append("discountPercent", event.data.discountPercent || 0);
+    formData.append("category", event.data.category);
+    formData.append("badgeText", event.data.badgeText || "");
+    formData.append("badgeColor", event.data.badgeColor || "primary");
+    formData.append("gender", event.data.gender);
+    formData.append("brands", JSON.stringify(event.data.brands));
+    formData.append("similar", event.data.similar || "");
+    formData.append("type", event.data.type);
+    formData.append("seasons", JSON.stringify(event.data.seasons));
+    formData.append("seasonsText", seasonsText);
+    formData.append("volume", event.data.volume);
+    formData.append("capacity", event.data.capacity);
+    formData.append("sold", event.data.sold || 0);
+    formData.append("description", event.data.description || "");
+
+    // Add image if present
+    if (event.data.image) {
+      formData.append("image", event.data.image);
+    }
+
     let response;
+    const apiBaseUrl = "http://127.0.0.1:8000/api/products";
 
     if (props.mode === "edit") {
       // Update existing perfume
-      response = await $fetch(`/api/perfumes/${props.perfume.id}`, {
+      response = await $fetch(`${apiBaseUrl}/admin/${props.perfume.id}`, {
         method: "PUT",
         body: formData,
       });
@@ -296,7 +305,7 @@ async function onSubmit(event) {
       });
     } else {
       // Create new perfume
-      response = await $fetch("/api/perfumes", {
+      response = await $fetch(`${apiBaseUrl}/admin/create`, {
         method: "POST",
         body: formData,
       });
@@ -311,20 +320,24 @@ async function onSubmit(event) {
 
     console.log("Saved to DB:", response);
 
-    // Emit success event and navigate
     emit("success", response);
     router.push("/admin/perfumes");
   } catch (error) {
     console.error("Error saving perfume:", error);
+
+    // Show detailed error message
+    const errorMessage =
+      error?.data?.message || error?.message || "خطا در ارتباط با سرور";
+
     toast.add({
       title: "خطا",
-      description:
-        props.mode === "edit"
-          ? "خطا در ویرایش عطر در پایگاه داده"
-          : "خطا در ذخیره‌سازی عطر در پایگاه داده",
+      description: errorMessage,
       color: "error",
       icon: "i-lucide-x",
+      timeout: 5000,
     });
+  } finally {
+    isSubmitting.value = false;
   }
 }
 
@@ -357,9 +370,9 @@ function handleCancel() {
       class="space-y-6"
     >
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-        <!-- Main Content - Left Side -->
+        <!-- Main Content -->
         <div class="lg:col-span-2 space-y-4">
-          <!-- Image Upload Card - Mobile First -->
+          <!-- Mobile Image Upload -->
           <UCard class="lg:hidden">
             <UFormField
               name="image"
@@ -452,7 +465,7 @@ function handleCancel() {
                   />
                 </UFormField>
 
-                <!-- Stock Status Indicator -->
+                <!-- Stock Status -->
                 <div
                   v-if="state.capacity !== null"
                   class="sm:col-span-2 p-3 rounded-lg border flex items-center gap-2 text-sm"
@@ -503,13 +516,14 @@ function handleCancel() {
                   />
                 </UFormField>
 
+                <!-- Brands Section -->
                 <UFormField
                   label="برندها"
                   name="brands"
                   required
                   class="sm:col-span-2"
                 >
-                  <div class="space-y-2">
+                  <div class="space-y-3">
                     <UButton
                       type="button"
                       color="primary"
@@ -521,33 +535,78 @@ function handleCancel() {
                       انتخاب برند
                     </UButton>
 
-                    <div
-                      v-if="state.brands.length"
-                      class="flex flex-wrap gap-2"
-                    >
-                      <NuxtLink
-                        v-for="brand in state.brands"
-                        :key="brand.id"
-                        :to="`/product_brand/${brand.slug}`"
-                        class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-elevated text-xs font-medium hover:bg-primary/10 hover:text-primary transition-colors ring-1 ring-default"
-                      >
-                        <span>{{ brand.name }}</span>
-                        <button
+                    <div v-if="state.brands.length" class="space-y-2">
+                      <div class="flex items-center justify-between">
+                        <p class="text-xs text-muted">
+                          برندهای انتخاب شده: {{ state.brands.length }}
+                        </p>
+                        <UButton
+                          v-if="state.brands.length > 1"
                           type="button"
-                          class="text-muted hover:text-error transition-colors"
-                          @click.stop.prevent="
-                            state.brands = state.brands.filter(
-                              (b) => b.id !== brand.id
-                            )
-                          "
+                          color="error"
+                          variant="ghost"
+                          size="xs"
+                          icon="i-lucide-trash-2"
+                          @click="state.brands = []"
                         >
-                          <UIcon name="i-lucide-x" class="size-3.5" />
-                        </button>
-                      </NuxtLink>
+                          حذف همه
+                        </UButton>
+                      </div>
+
+                      <div class="flex flex-wrap gap-2">
+                        <div
+                          v-for="brand in state.brands"
+                          :key="brand.id"
+                          class="group relative inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-elevated hover:bg-primary/5 ring-1 ring-default hover:ring-primary/50 transition-all"
+                        >
+                          <img
+                            v-if="brand.image"
+                            :src="brand.image"
+                            :alt="brand.name"
+                            class="size-6 object-cover rounded ring-1 ring-default"
+                          />
+                          <div
+                            v-else
+                            class="size-6 bg-default rounded flex items-center justify-center"
+                          >
+                            <UIcon
+                              name="i-lucide-image"
+                              class="size-3 text-muted"
+                            />
+                          </div>
+
+                          <NuxtLink
+                            :to="`/product_brand/${brand.slug}`"
+                            target="_blank"
+                            class="text-sm font-medium hover:text-primary transition-colors"
+                          >
+                            {{ brand.name }}
+                          </NuxtLink>
+
+                          <button
+                            type="button"
+                            class="ml-1 p-1 text-muted hover:text-error hover:bg-error/10 rounded transition-all"
+                            @click="removeBrand(brand.id)"
+                            title="حذف برند"
+                          >
+                            <UIcon name="i-lucide-x" class="size-3.5" />
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                    <p v-else class="text-xs text-muted">
-                      هنوز برندی انتخاب نشده است.
-                    </p>
+
+                    <div
+                      v-else
+                      class="text-center py-4 border border-dashed border-default rounded-lg"
+                    >
+                      <UIcon
+                        name="i-lucide-package-search"
+                        class="size-8 text-muted mx-auto mb-2"
+                      />
+                      <p class="text-xs text-muted">
+                        هنوز برندی انتخاب نشده است
+                      </p>
+                    </div>
                   </div>
                 </UFormField>
 
@@ -579,6 +638,34 @@ function handleCancel() {
                 <UFormField label="حجم" name="volume" required>
                   <UInput v-model="state.volume" placeholder="100ml" />
                 </UFormField>
+              </div>
+            </template>
+
+            <!-- Description Section -->
+            <template #description>
+              <div class="pb-4">
+                <UFormField
+                  label="توضیحات کامل محصول"
+                  name="description"
+                  description="توضیحات کامل محصول را با امکان افزودن متن و تصویر وارد کنید"
+                  class="sm:col-span-2"
+                >
+                  <RichTextEditor
+                    v-model="state.description"
+                    placeholder="توضیحات محصول، نحوه استفاده، نکات مهم و ..."
+                  />
+                </UFormField>
+
+                <!-- Preview -->
+                <div v-if="state.description" class="mt-4">
+                  <p class="text-sm font-medium text-default mb-2">
+                    پیش‌نمایش:
+                  </p>
+                  <div
+                    class="prose prose-sm max-w-none p-4 rounded-lg bg-elevated border border-default"
+                    v-html="state.description"
+                  />
+                </div>
               </div>
             </template>
 
@@ -619,6 +706,8 @@ function handleCancel() {
                 size="lg"
                 color="primary"
                 icon="i-lucide-save"
+                :loading="isSubmitting"
+                :disabled="isSubmitting"
                 class="flex-1 sm:flex-none"
               >
                 {{ submitButtonText }}
@@ -630,6 +719,7 @@ function handleCancel() {
                 color="neutral"
                 variant="outline"
                 icon="i-lucide-x"
+                :disabled="isSubmitting"
                 @click="handleCancel"
                 class="flex-1 sm:flex-none"
               >
@@ -689,7 +779,11 @@ function handleCancel() {
       </div>
     </UForm>
 
-    <!-- Brand picker modal -->
-    <BrandSelectModal v-model="showBrandModal" @select="onBrandSelect" />
+    <!-- Brand Selection Modal -->
+    <BrandPicker
+      v-model="showBrandModal"
+      :selected-brands="state.brands"
+      @select="onBrandSelect"
+    />
   </div>
 </template>

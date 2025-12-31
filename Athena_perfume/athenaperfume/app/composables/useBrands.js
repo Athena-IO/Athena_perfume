@@ -5,7 +5,7 @@ export function useBrands() {
   async function fetchBrands() {
     loading.value = true;
     try {
-      const { data } = await useFetch("/api/brands");
+      const { data } = await useFetch("/api/products/brands");
       brands.value = data.value || [];
     } finally {
       loading.value = false;
@@ -13,7 +13,7 @@ export function useBrands() {
   }
 
   async function addBrand(formData) {
-    await $fetch("/api/brands", {
+    await $fetch("/api/products/brands", {
       method: "POST",
       body: formData,
     });
@@ -22,7 +22,7 @@ export function useBrands() {
   }
 
   async function deleteBrand(id) {
-    await $fetch(`/api/brands/${id}`, {
+    await $fetch(`/api/products/brands/${id}`, {
       method: "DELETE",
     });
     // optionally also refetch here:

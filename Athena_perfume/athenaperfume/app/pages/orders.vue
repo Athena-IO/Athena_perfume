@@ -194,22 +194,22 @@ const orders = ref([
     paymentMethod: "آنلاین",
     paymentStatus: "پرداخت شده",
     notes: "لطفا قبل از ساعت ۵ عصر تحویل دهید",
-    items: [
-      {
-        id: "1",
-        name: "شانل شماره ۵",
-        size: "۵۰ میلی‌لیتر",
-        quantity: 2,
-        price: 1200000,
-      },
-      {
-        id: "2",
-        name: "دیور ساواژ",
-        size: "۱۰۰ میلی‌لیتر",
-        quantity: 1,
-        price: 1500000,
-      },
-    ],
+      items: [
+        {
+          id: "1",
+          name: "شانل شماره ۵",
+          size: "۵۰ میلی‌لیتر",
+          quantity: 2,
+          price: 1200000,
+        },
+        {
+          id: "2",
+          name: "دیور ساواژ",
+          size: "۱۰۰ میلی‌لیتر",
+          quantity: 1,
+          price: 1500000,
+        },
+      ],
     totalValue: 3900000,
   },
   {

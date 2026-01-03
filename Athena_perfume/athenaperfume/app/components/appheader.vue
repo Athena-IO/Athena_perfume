@@ -50,17 +50,17 @@
                 />
               </div>
 
-              <div v-if="searchPending" class="text-sm text-muted">
+              <div v-if="searchStore.pending" class="text-sm text-muted">
                 Searching...
               </div>
-              <div v-else-if="searchError" class="flex flex-col items-center justify-center py-8 text-center">
+              <div v-else-if="searchStore.error" class="flex flex-col items-center justify-center py-8 text-center">
                 <UIcon name="i-lucide-search-x" class="w-12 h-12 text-muted mb-3" />
                 <p class="text-sm font-medium text-muted">نتیجه‌ای یافت نشد</p>
                 <p class="text-xs text-muted mt-1">لطفاً عبارت دیگری را جستجو کنید</p>
               </div>
               <div v-else>
                 <div
-                  v-if="!searchResults.length && search.length > 2"
+                  v-if="!searchStore.results.length && search.length > 2"
                   class="flex flex-col items-center justify-center py-8 text-center"
                 >
                   <UIcon name="i-lucide-search-x" class="w-12 h-12 text-muted mb-3" />
@@ -70,7 +70,7 @@
 
                 <div v-else class="space-y-1 max-h-96 overflow-auto">
                   <NuxtLink
-                    v-for="item in searchResults"
+                    v-for="item in searchStore.results"
                     :key="item.id"
                     :to="`/products/${item.slug}`"
                     class="flex items-center justify-between px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
@@ -182,17 +182,17 @@
                 />
               </div>
 
-              <div v-if="searchPending" class="text-sm text-muted">
+              <div v-if="searchStore.pending" class="text-sm text-muted">
                 Searching...
               </div>
-              <div v-else-if="searchError" class="flex flex-col items-center justify-center py-6 text-center">
+              <div v-else-if="searchStore.error" class="flex flex-col items-center justify-center py-6 text-center">
                 <UIcon name="i-lucide-search-x" class="w-10 h-10 text-muted mb-2" />
                 <p class="text-sm font-medium text-muted">نتیجه‌ای یافت نشد</p>
                 <p class="text-xs text-muted mt-1">لطفاً عبارت دیگری را جستجو کنید</p>
               </div>
               <div v-else>
                 <div
-                  v-if="!searchResults.length && search.length > 2"
+                  v-if="!searchStore.results.length && search.length > 2"
                   class="flex flex-col items-center justify-center py-6 text-center"
                 >
                   <UIcon name="i-lucide-search-x" class="w-10 h-10 text-muted mb-2" />
@@ -202,7 +202,7 @@
 
                 <div v-else class="space-y-1 max-h-60 overflow-auto">
                   <NuxtLink
-                    v-for="item in searchResults"
+                    v-for="item in searchStore.results"
                     :key="item.id"
                     :to="`/products/${item.slug}`"
                     class="flex items-center justify-between px-3 py-2 text-sm rounded-md hover:bg-muted transition-colors"
@@ -286,7 +286,7 @@
 <script setup>
 import { useCartStore } from "~/composables/stores/cart";
 import { useAuthStore } from "~/stores/auth";
-import { useSearch } from "~/composables/useSearch";
+import { useSearchStore } from "~/stores/search";
 
 const cartStore = useCartStore();
 const cartOpen = ref(false);
@@ -301,16 +301,22 @@ const totalItems = computed(() => cartStore.items.length);
 const searchOpen = ref(false);
 const search = ref("");
 
-// Composable using useFetch with reactive query and watch.[useFetch watch](https://stackoverflow.com/questions/78633662)
-const {
-  results: searchResults,
-  pending: searchPending,
-  error: searchError,
-} = useSearch(search);
+// Pinia search store
+const searchStore = useSearchStore();
+
+// Watch search query and trigger search
+watch(search, (newQuery) => {
+  if (newQuery?.trim()) {
+    searchStore.search(newQuery);
+  } else {
+    searchStore.clearResults();
+  }
+});
 
 const closeSearch = () => {
   searchOpen.value = false;
   search.value = "";
+  searchStore.clearResults();
 };
 
 // User menu (desktop)

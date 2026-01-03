@@ -11,8 +11,8 @@
       <template #header>
         <div class="flex items-center justify-between">
           <h2 class="text-xl font-semibold">Add New Banner</h2>
-          <UBadge :color="banners.length >= 4 ? 'error' : 'success'">
-            {{ banners.length }}/4 Banners
+          <UBadge :color="bannersStore.banners.length >= 4 ? 'error' : 'success'">
+            {{ bannersStore.banners.length }}/4 Banners
           </UBadge>
         </div>
       </template>
@@ -72,7 +72,7 @@
             icon="i-lucide-plus"
             size="lg"
             :loading="isAdding"
-            :disabled="banners.length >= 4 || !form.image || !form.name"
+            :disabled="bannersStore.banners.length >= 4 || !form.image || !form.name"
             @click="addBanner"
           />
         </div>
@@ -83,19 +83,19 @@
     <div>
       <h2 class="text-xl font-semibold mb-4">Current Banners</h2>
 
-      <div v-if="loading" class="text-center py-12">
+      <div v-if="bannersStore.loading" class="text-center py-12">
         <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl text-muted" />
         <p class="text-muted mt-2">Loading banners...</p>
       </div>
 
-      <div v-else-if="banners.length === 0" class="text-center py-12 border border-dashed border-default rounded-lg">
+      <div v-else-if="bannersStore.banners.length === 0" class="text-center py-12 border border-dashed border-default rounded-lg">
         <UIcon name="i-lucide-image-off" class="text-4xl text-muted mb-2" />
         <p class="text-muted">No banners added yet</p>
       </div>
 
       <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <UCard
-          v-for="banner in banners"
+          v-for="banner in bannersStore.banners"
           :key="banner.id"
           class="relative"
         >
@@ -156,6 +156,8 @@
 </template>
 
 <script setup>
+import { useBannersStore } from '~/stores/banners'
+
 const toast = useToast()
 
 const isAdding = ref(false)
@@ -166,12 +168,12 @@ const form = reactive({
   link: ''
 })
 
-// composable
-const { banners, loading, fetchBanners } = useBanners()
+// Pinia store
+const bannersStore = useBannersStore()
 
 // Add banner
 async function addBanner() {
-  if (banners.value.length >= 4) {
+  if (bannersStore.banners.length >= 4) {
     toast.add({
       title: 'Maximum Reached',
       description: 'You can only have up to 4 banners. Please remove one to add a new banner.',
@@ -198,13 +200,7 @@ async function addBanner() {
     formData.append('name', form.name)
     formData.append('link', form.link || '')
 
-    const created = await $fetch('/api/banners', {
-      method: 'POST',
-      body: formData
-    })
-
-    // Update local state
-    banners.value.push(created)
+    await bannersStore.addBanner(formData)
 
     // Reset form
     form.image = null
@@ -230,11 +226,7 @@ async function addBanner() {
 // Remove banner
 async function removeBanner(id) {
   try {
-    await $fetch(`/api/banners/${id}`, {
-      method: 'DELETE'
-    })
-
-    banners.value = banners.value.filter(b => b.id !== id)
+    await bannersStore.removeBanner(id)
 
     toast.add({
       title: 'Success',
@@ -255,6 +247,6 @@ function createPreviewUrl(file) {
 }
 
 onMounted(() => {
-  fetchBanners()
+  bannersStore.fetchBanners()
 })
 </script>

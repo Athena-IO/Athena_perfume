@@ -1,4 +1,5 @@
 <script setup>
+import { useBrandsStore } from '~/stores/brands'
 const props = defineProps({
   modelValue: {
     type: Boolean,
@@ -13,7 +14,7 @@ const props = defineProps({
 
 const emit = defineEmits(["update:modelValue", "select"]);
 
-const { brands, loading, fetchBrands } = useBrands();
+const brandsStore = useBrandsStore();
 const searchTerm = ref("");
 
 const open = computed({
@@ -23,14 +24,14 @@ const open = computed({
 
 // Fetch brands when modal opens
 watch(open, (isOpen) => {
-  if (isOpen && brands.value.length === 0) {
-    fetchBrands();
+  if (isOpen && brandsStore.brands.length === 0) {
+    brandsStore.fetchBrands();
   }
 });
 
 // Filter out already selected brands and apply search
 const filteredBrands = computed(() => {
-  let result = brands.value;
+  let result = brandsStore.brands;
 
   // Filter out already selected brands
   const selectedIds = props.selectedBrands.map((b) => b.id);
@@ -80,7 +81,7 @@ function selectBrand(brand) {
 
         <!-- Loading State -->
         <div
-          v-if="loading"
+          v-if="brandsStore.loading"
           class="flex flex-col items-center justify-center py-12"
         >
           <UIcon
@@ -92,7 +93,7 @@ function selectBrand(brand) {
 
         <!-- Empty State - No brands at all -->
         <div
-          v-else-if="brands.length === 0"
+          v-else-if="brandsStore.brands.length === 0"
           class="text-center py-12 border border-dashed border-default rounded-lg"
         >
           <UIcon name="i-lucide-image-off" class="text-4xl text-muted mb-2" />

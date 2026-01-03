@@ -60,7 +60,7 @@
     <div>
       <h2 class="text-xl font-semibold mb-4">Current Brands</h2>
 
-      <div v-if="loading" class="text-center py-12">
+      <div v-if="brandsStore.loading" class="text-center py-12">
         <UIcon
           name="i-lucide-loader-2"
           class="animate-spin text-4xl text-muted"
@@ -69,7 +69,7 @@
       </div>
 
       <div
-        v-else-if="brands.length === 0"
+        v-else-if="brandsStore.brands.length === 0"
         class="text-center py-12 border border-dashed border-default rounded-lg"
       >
         <UIcon name="i-lucide-image-off" class="text-4xl text-muted mb-2" />
@@ -78,7 +78,7 @@
 
       <div v-else>
         <BrandCards
-          :brands="brands"
+          :brands="brandsStore.brands"
           @view="viewBrand"
           @delete="confirmDeleteBrand"
         />
@@ -88,11 +88,13 @@
 </template>
 
 <script setup>
+import { useBrandsStore } from '~/stores/brands'
+
 const toast = useToast();
 const router = useRouter();
 
-// your composable
-const { brands, loading, fetchBrands, addBrand, deleteBrand } = useBrands();
+// Pinia store
+const brandsStore = useBrandsStore();
 
 const isAdding = ref(false);
 
@@ -133,7 +135,7 @@ async function handleAddBrand() {
     formData.append("name", form.name);
     formData.append("slug", form.slug);
 
-    await addBrand(formData);
+    await brandsStore.addBrand(formData);
 
     form.image = null;
     form.name = "";
@@ -161,7 +163,7 @@ function viewBrand(brand) {
 
 async function confirmDeleteBrand(brand) {
   try {
-    await deleteBrand(brand.id);
+    await brandsStore.deleteBrand(brand.id);
     toast.add({
       title: "Success",
       description: "Brand removed successfully",
@@ -177,6 +179,6 @@ async function confirmDeleteBrand(brand) {
 }
 
 onMounted(() => {
-  fetchBrands();
+  brandsStore.fetchBrands();
 });
 </script>

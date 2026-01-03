@@ -2,7 +2,7 @@
   <div class="w-full px-4 sm:px-6 lg:px-8">
     <div class="px-6 py-8">
       <BannerCarousel
-        :banners="banners"
+        :banners="bannersStore.banners"
         height="medium"
         :autoplay="true"
         :autoplay-delay="7000"
@@ -306,7 +306,10 @@
 </template>
 
 <script setup>
+import { useBannersStore } from '~/stores/banners'
+
 const selectedCategory = ref("all");
+const bannersStore = useBannersStore();
 
 // Your products array (make sure it has at least 8 items)
 const products = ref([

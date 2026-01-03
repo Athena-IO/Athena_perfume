@@ -300,6 +300,8 @@ async function updateToSent() {
 
 function printOrder() {
   // می‌توانید یک صفحه چاپ سفارشی ایجاد کنید
-  window.print()
+  if (process.client) {
+    window.print()
+  }
 }
 </script>

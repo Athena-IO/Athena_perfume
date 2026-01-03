@@ -4,15 +4,7 @@
       <div class="flex flex-col lg:flex-row gap-4 sm:gap-6">
         <!-- Desktop Filters -->
         <aside class="hidden lg:block lg:w-64 shrink-0">
-          <ProductFilter
-            :selectedCategory="selectedCategory"
-            :selectedBrands="selectedBrands"
-            :selectedSort="selectedSort"
-            :filtered-count="filteredProducts.length"
-            @update:category="selectedCategory = $event"
-            @update:brands="selectedBrands = $event"
-            @update:sort="selectedSort = $event"
-          />
+          <ProductFilter />
         </aside>
 
         <!-- Main Content -->
@@ -33,15 +25,7 @@
               />
 
               <template #body>
-                <ProductFilter
-                  :selectedCategory="selectedCategory"
-                  :selectedBrands="selectedBrands"
-                  :selectedSort="selectedSort"
-                  :filtered-count="filteredProducts.length"
-                  @update:category="selectedCategory = $event"
-                  @update:brands="selectedBrands = $event"
-                  @update:sort="selectedSort = $event"
-                />
+                <ProductFilter />
               </template>
 
               <template #footer>
@@ -60,14 +44,14 @@
             class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-6"
           >
             <ProductCard
-              v-for="product in visibleProducts"
+              v-for="product in productsStore.paginatedProducts"
               :key="product.id"
               :product="product"
             />
           </div>
 
           <!-- Empty State -->
-          <div v-if="filteredProducts.length === 0" class="text-center py-12">
+          <div v-if="productsStore.filteredProducts.length === 0" class="text-center py-12">
             <UIcon
               name="i-lucide-package-x"
               class="size-16 text-gray-400 mx-auto mb-4"
@@ -77,19 +61,34 @@
             </p>
           </div>
 
-          <!-- Show more -->
-          <div v-else ref="loadMoreRef" class="flex justify-center mt-8">
+          <!-- Pagination controls -->
+          <div
+            v-if="productsStore.totalPages > 1"
+            class="flex justify-center mt-8 gap-2"
+          >
             <UButton
-              v-if="!allVisible"
-              color="primary"
-              variant="soft"
-              @click="showMore"
+              icon="i-lucide-arrow-right"
+              color="neutral"
+              variant="outline"
+              :disabled="productsStore.currentPage === 1"
+              @click="productsStore.prevPage()"
+            />
+            <UButton
+              v-for="page in productsStore.totalPages"
+              :key="page"
+              :color="productsStore.currentPage === page ? 'primary' : 'neutral'"
+              variant="outline"
+              @click="productsStore.setCurrentPage(page)"
             >
-              نمایش بیشتر
+              {{ page }}
             </UButton>
-            <p v-else class="text-sm text-gray-500">
-              همه محصولات نمایش داده شده‌اند
-            </p>
+            <UButton
+              icon="i-lucide-arrow-left"
+              color="neutral"
+              variant="outline"
+              :disabled="productsStore.currentPage === productsStore.totalPages"
+              @click="productsStore.nextPage()"
+            />
           </div>
         </div>
       </div>
@@ -98,9 +97,13 @@
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { ref, onMounted, watch } from "vue";
 import ProductFilter from "~/components/ProductFilter.vue";
 import ProductCard from "~/components/ProductCard.vue";
+import { useProductsStore } from "~/stores/products.js";
+
+const productsStore = useProductsStore();
+const isFilterOpen = ref(false); // For mobile filter drawer
 
 const props = defineProps({
   category: {
@@ -113,300 +116,30 @@ const props = defineProps({
   },
 });
 
-// Filter drawer state for mobile
-const isFilterOpen = ref(false);
+onMounted(() => {
+  productsStore.fetchAllProducts();
+  // Set initial category and brand from props
+  if (props.category) {
+    productsStore.setSelectedCategory(props.category);
+  }
+  if (props.brand) {
+    productsStore.setSelectedBrands([props.brand]);
+  }
+});
 
-// Initialize with props
-const selectedCategory = ref(props.category);
-const selectedBrands = ref(props.brand ? [props.brand] : []);
-const selectedSort = ref("none");
-
-// Watch for prop changes and update local state
+// Watch for prop changes and update store state
 watch(
   () => props.category,
   (newCategory) => {
-    selectedCategory.value = newCategory;
-  },
-  { immediate: true }
+    productsStore.setSelectedCategory(newCategory);
+  }
 );
 
 watch(
   () => props.brand,
   (newBrand) => {
-    selectedBrands.value = newBrand ? [newBrand] : [];
-  },
-  { immediate: true }
-);
-
-const products = ref([
-  {
-    id: 4,
-    slug: "dior-sauvage-4",
-    name: "دیور ساواج",
-    price: 2500000,
-    discountPercent: 10,
-    capacity: 250,
-    rating: 4.5,
-    reviews: 128,
-    image:
-      "https://liliome.com/wp-content/uploads/2016/04/Dior-Sauvage-1.jpg?v=1680545729",
-    category: "male",
-    brand: "dior",
-    badge: { text: "جدید", color: "primary" },
-    information: {
-      gender: "مردانه",
-      brand: "Dior",
-      similar: "Bleu de Chanel",
-      type: "Eau de Toilette",
-      season: "چهار فصل (بهترین برای تابستان)",
-      volume: "100ml / 200ml",
-    },
-  },
-  {
-    id: 5,
-    slug: "chanel-bleu-5",
-    name: "شنل بلو د شنل",
-    price: 3200000,
-    discountPercent: 15,
-    capacity: 80,
-    rating: 4.7,
-    reviews: 210,
-    image: "https://liliome.ir/wp-content/uploads/2015/12/6-1.jpg",
-    category: "male",
-    brand: "chanel",
-    badge: { text: "پرفروش", color: "success" },
-    information: {
-      gender: "مردانه",
-      brand: "Chanel",
-      similar: "Dior Sauvage",
-      type: "Eau de Parfum",
-      season: "چهار فصل",
-      volume: "100ml / 150ml",
-    },
-  },
-  {
-    id: 6,
-    slug: "lancome-la-vie-6",
-    name: "لانکوم لا ویه است بله",
-    price: 1980000,
-    discountPercent: 8,
-    capacity: 0,
-    rating: 4.2,
-    reviews: 74,
-    image:
-      "https://hamedsps.ir/wp-content/uploads/2023/04/%D9%84%D9%88%DB%8C%D9%87-%D8%A8%D9%84.jpg",
-    category: "female",
-    brand: "lancome",
-    badge: { text: "ویژه", color: "warning" },
-    information: {
-      gender: "زنانه",
-      brand: "Lancôme",
-      similar: "Armani Si",
-      type: "Eau de Parfum",
-      season: "پاییز و زمستان",
-      volume: "75ml / 100ml",
-    },
-  },
-  {
-    id: 7,
-    slug: "versace-eros-7",
-    name: "ورساچه اروس",
-    price: 2600000,
-    discountPercent: 12,
-    capacity: 150,
-    rating: 4.3,
-    reviews: 91,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYNzQWBYJkEtxw5kCcSyHGKnEVOugmqPf2qg&s",
-    category: "male",
-    brand: "versace",
-    badge: { text: "تخفیف‌دار", color: "error" },
-    information: {
-      gender: "مردانه",
-      brand: "Versace",
-      similar: "Invictus by Paco Rabanne",
-      type: "Eau de Toilette",
-      season: "زمستان / پاییز",
-      volume: "100ml / 200ml",
-    },
-  },
-  {
-    id: 8,
-    slug: "ysl-libre-8",
-    name: "ایو سن لورن لیبره",
-    price: 3000000,
-    discountPercent: 5,
-    capacity: 60,
-    rating: 4.6,
-    reviews: 52,
-    image:
-      "https://liliome.com/wp-content/uploads/2019/08/Yves-Saint-Laurent-Libre-1.jpg",
-    category: "female",
-    brand: "ysl",
-    badge: { text: "پیشنهادی", color: "primary" },
-    information: {
-      gender: "زنانه",
-      brand: "YSL",
-      similar: "Mon Paris",
-      type: "Eau de Parfum",
-      season: "چهار فصل",
-      volume: "90ml",
-    },
-  },
-  {
-    id: 9,
-    slug: "creed-aventus-9",
-    name: "کرید اونتوس",
-    price: 2850000,
-    discountPercent: 18,
-    capacity: 300,
-    rating: 4.8,
-    reviews: 184,
-    image: "https://liliome.ir/wp-content/uploads/2016/12/3-76.jpg",
-    category: "male",
-    brand: "creed",
-    badge: { text: "پرفروش", color: "success" },
-    information: {
-      gender: "مردانه",
-      brand: "Creed",
-      similar: "Mont Blanc Explorer",
-      type: "Eau de Parfum",
-      season: "چهار فصل (بهترین برای بهار)",
-      volume: "100ml / 120ml",
-    },
-  },
-  {
-    id: 10,
-    slug: "burberry-her-10",
-    name: "بربری هر",
-    price: 1750000,
-    discountPercent: 7,
-    capacity: 40,
-    rating: 4.1,
-    reviews: 35,
-    image:
-      "https://www.roha-shop.com/wp-content/uploads/2022/08/%D8%A8%D8%A7%D8%B1%D8%A8%D8%B1%DB%8C-%D9%87%D8%B1-01.jpg",
-    category: "female",
-    brand: "burberry",
-    badge: { text: "اقتصادی", color: "neutral" },
-    information: {
-      gender: "زنانه",
-      brand: "Burberry",
-      similar: "Ariana Grande Cloud",
-      type: "Eau de Parfum",
-      season: "بهار و تابستان",
-      volume: "100ml",
-    },
-  },
-  {
-    id: 11,
-    slug: "tomford-black-orchid-11",
-    name: "تام فورد بلک اورکید",
-    price: 2300000,
-    discountPercent: 9,
-    capacity: 90,
-    rating: 4.4,
-    reviews: 147,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTE-LsGMChiT5p8uw2tsRiBoO29qJotnXihyg&s",
-    category: "unisex",
-    brand: "tomford",
-    badge: { text: "کلاسیک", color: "warning" },
-    information: {
-      gender: "یونیسکس",
-      brand: "Tom Ford",
-      similar: "Narciso Rodriguez For Her",
-      type: "Eau de Parfum",
-      season: "پاییز و زمستان",
-      volume: "100ml / 150ml",
-    },
-  },
-]);
-
-// full filtered list (by category/brand/sort)
-const filteredProducts = computed(() => {
-  let list = [...products.value];
-
-  // Filter by category
-  if (selectedCategory.value && selectedCategory.value !== "all") {
-    list = list.filter((p) => p.category === selectedCategory.value);
-  }
-
-  // Filter by brands (multiple selection)
-  if (selectedBrands.value.length > 0) {
-    list = list.filter((p) => selectedBrands.value.includes(p.brand));
-  }
-
-  // Sort
-  if (selectedSort.value === "price_low_high") {
-    list.sort((a, b) => a.price - b.price);
-  } else if (selectedSort.value === "price_high_low") {
-    list.sort((a, b) => b.price - a.price);
-  }
-
-  return list;
-});
-
-// pagination state
-const pageSize = 12;
-const visibleCount = ref(pageSize);
-
-// reset visibleCount when filters change
-watch(
-  () => [
-    selectedCategory.value,
-    selectedBrands.value.slice(),
-    selectedSort.value,
-  ],
-  () => {
-    visibleCount.value = pageSize;
+    productsStore.setSelectedBrands(newBrand ? [newBrand] : []);
   }
 );
 
-// only show first visibleCount items
-const visibleProducts = computed(() =>
-  filteredProducts.value.slice(0, visibleCount.value)
-);
-
-const allVisible = computed(
-  () => visibleCount.value >= filteredProducts.value.length
-);
-
-function showMore() {
-  if (!allVisible.value) {
-    visibleCount.value += pageSize;
-  }
-}
-
-// optional: auto-load when button is in view
-const loadMoreRef = ref(null);
-let observer;
-
-onMounted(() => {
-  if (typeof window === "undefined") return;
-
-  observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting && !allVisible.value) {
-          showMore();
-        }
-      });
-    },
-    {
-      root: null,
-      threshold: 0.1,
-    }
-  );
-
-  if (loadMoreRef.value) {
-    observer.observe(loadMoreRef.value);
-  }
-});
-
-onBeforeUnmount(() => {
-  if (observer && loadMoreRef.value) {
-    observer.unobserve(loadMoreRef.value);
-  }
-});
 </script>

@@ -30,11 +30,33 @@ const editor = useEditor({
   ],
   content: props.modelValue,
   onUpdate: ({ editor }) => {
-    emit("update:modelValue", editor.getHTML());
+    try {
+      emit("update:modelValue", editor.getHTML());
+    } catch (error) {
+      console.warn('Error updating editor content:', error);
+    }
   },
   editorProps: {
     attributes: {
       class: "prose prose-sm max-w-none focus:outline-none min-h-[200px] p-4",
+    },
+    handleDOMEvents: {
+      focus: (view, event) => {
+        try {
+          return true;
+        } catch (error) {
+          console.warn('Focus event error:', error);
+          return true;
+        }
+      },
+      blur: (view, event) => {
+        try {
+          return true;
+        } catch (error) {
+          console.warn('Blur event error:', error);
+          return true;
+        }
+      },
     },
   },
 });
@@ -53,10 +75,12 @@ onBeforeUnmount(() => {
 });
 
 const addImage = () => {
-  const url = window.prompt("آدرس تصویر را وارد کنید:");
+  if (process.client) {
+    const url = window.prompt("آدرس تصویر را وارد کنید:");
 
-  if (url) {
-    editor.value?.chain().focus().setImage({ src: url }).run();
+    if (url) {
+      editor.value?.chain().focus().setImage({ src: url }).run();
+    }
   }
 };
 

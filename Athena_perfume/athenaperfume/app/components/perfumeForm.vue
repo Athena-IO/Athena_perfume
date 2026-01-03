@@ -65,11 +65,20 @@ const stockStatus = computed(() => {
   }
 });
 
-const categoryOptions = [
-  { label: "مردانه", value: "male" },
-  { label: "زنانه", value: "female" },
-  { label: "یونیسکس", value: "unisex" },
-];
+import { useCategoriesStore } from '~/stores/categories.js';
+const categoriesStore = useCategoriesStore();
+
+onMounted(() => {
+  categoriesStore.fetchCategories();
+});
+
+const categoryOptions = computed(() =>
+  categoriesStore.categories.map(c => ({
+    label: c.label || c.name,
+    value: c.value || c.slug,
+    slug: c.slug || c.value // for potential link use
+  }))
+);
 
 const badgeColorOptions = [
   { label: "اصلی", value: "primary" },

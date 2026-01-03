@@ -1,8 +1,10 @@
-// plugins.creds
+// plugins/auth.client.js
+import { useAuthStore } from '~/stores/auth'
+
 export default defineNuxtPlugin(async () => {
-  const { fetchCurrentUser } = useAuth();
+  const authStore = useAuthStore();
 
   if (process.client) {
-    await fetchCurrentUser();
+    await authStore.fetchCurrentUser();
   }
 });

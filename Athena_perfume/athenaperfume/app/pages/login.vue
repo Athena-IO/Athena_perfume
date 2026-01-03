@@ -61,11 +61,13 @@
 </template>
 
 <script setup>
+import { useAuthStore } from '~/stores/auth'
+
 const identifier = ref("")
 const password = ref("")
 const pending = ref(false)
 
-const { setUser } = useAuth()
+const authStore = useAuthStore()
 const router = useRouter()
 const route = useRoute() // read query (?redirectTo=/checkout)
 
@@ -83,7 +85,7 @@ const handleLogin = async () => {
     const accessCookie = useCookie("access", { maxAge: 60 * 60 * 24 * 7 })
     accessCookie.value = res.access || res.access_token
 
-    setUser(res.user || res)
+    authStore.setUser(res.user || res)
 
     useAppToast().toastSuccess({
       title:

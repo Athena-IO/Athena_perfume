@@ -93,13 +93,13 @@
       <UColorModeButton class="hidden lg:flex" />
 
       <!-- User auth - desktop -->
-      <div v-if="isAuthenticated" class="hidden lg:block">
+      <div v-if="authStore.isAuthenticated" class="hidden lg:block">
         <UDropdownMenu :items="userMenuItems">
           <UButton
             color="neutral"
             variant="ghost"
             size="md"
-            :label="user && user.fullName ? user.fullName : 'کاربر'"
+            :label="authStore.userInfo && authStore.userInfo.fullName ? authStore.userInfo.fullName : 'کاربر'"
             icon="i-lucide-user"
           />
         </UDropdownMenu>
@@ -231,9 +231,9 @@
       <UDivider class="my-4" />
 
       <!-- User in mobile -->
-      <div v-if="isAuthenticated" class="space-y-2">
+      <div v-if="authStore.isAuthenticated" class="space-y-2">
         <div class="px-2.5 py-2 text-sm font-medium text-muted">
-          {{ user && user.fullName ? user.fullName : "کاربر" }}
+          {{ authStore.userInfo && authStore.userInfo.fullName ? authStore.userInfo.fullName : "کاربر" }}
         </div>
         <UNavigationMenu
           :items="mobileUserMenuItems"
@@ -285,14 +285,14 @@
 
 <script setup>
 import { useCartStore } from "~/composables/stores/cart";
-import { useAuth } from "~/composables/useAuth";
+import { useAuthStore } from "~/stores/auth";
 import { useSearch } from "~/composables/useSearch";
 
 const cartStore = useCartStore();
 const cartOpen = ref(false);
 
 // Auth
-const { user, isAuthenticated, isAdmin, logout } = useAuth();
+const authStore = useAuthStore();
 
 // Cart count
 const totalItems = computed(() => cartStore.items.length);
@@ -318,8 +318,8 @@ const userMenuItems = computed(() => {
   const items = [
     [
       {
-        label: user && user.value && user.value.fullName
-          ? user.value.fullName
+        label: authStore.userInfo && authStore.userInfo.fullName
+          ? authStore.userInfo.fullName
           : "کاربر",
         icon: "i-lucide-user",
         type: "label",
@@ -344,7 +344,7 @@ const userMenuItems = computed(() => {
     ],
   ];
 
-  if (isAdmin.value) {
+  if (authStore.isAdmin) {
     items.push([
       {
         label: "پنل مدیریت",
@@ -361,7 +361,7 @@ const userMenuItems = computed(() => {
       icon: "i-lucide-log-out",
       color: "error",
       onSelect: () => {
-        logout();
+        authStore.logout();
       },
     },
   ]);
@@ -389,7 +389,7 @@ const mobileUserMenuItems = computed(() => {
     },
   ];
 
-  if (isAdmin.value) {
+  if (authStore.isAdmin) {
     items.push({
       label: "پنل مدیریت",
       icon: "i-lucide-shield",
@@ -400,7 +400,7 @@ const mobileUserMenuItems = computed(() => {
   items.push({
     label: "خروج از حساب",
     icon: "i-lucide-log-out",
-    click: () => logout(),
+    click: () => authStore.logout(),
   });
 
   return items;

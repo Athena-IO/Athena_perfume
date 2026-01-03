@@ -101,12 +101,12 @@
 
 <script setup>
 import { useCartStore } from "~/composables/stores/cart";
-import { useAuth } from "~/composables/useAuth";
+import { useAuthStore } from "~/stores/auth";
 
 const isOpen = defineModel("open", { default: false });
 const cart = useCartStore();
 const toast = useToast();
-const { user, isAuthenticated, isAdmin, logout } = useAuth();
+const authStore = useAuthStore();
 
 const formatPrice = (price) => {
   const num =
@@ -116,7 +116,7 @@ const formatPrice = (price) => {
   return num.toLocaleString("fa-IR");
 };
 const handleCheckout = () => {
-  if (!isAuthenticated.value) {
+  if (!authStore.isAuthenticated) {
     isOpen.value = false
     return navigateTo({
       path: "/login",

@@ -26,12 +26,14 @@
         <UIcon name="i-lucide-layers" class="size-4" />
         دسته‌بندی
       </label>
-      <URadioGroup
+      <USelect
         v-model="localCategory"
-        :items="categoryItems"
+        :items="categoryDropdownItems"
         color="primary"
-        variant="card"
+        option-variant="card"
+        size="md"
         @update:model-value="emit('update:category', localCategory)"
+        :loading="categoriesStore.loading"
       />
     </div>
 
@@ -55,6 +57,7 @@
           color="primary"
           size="md"
           @update:model-value="handleBrandToggle(brand.value, $event)"
+          :loading="brandsStore.loading"
         />
       </div>
     </div>
@@ -84,55 +87,53 @@
         class="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400"
       >
         <UIcon name="i-lucide-info" class="size-4" />
-        <span>{{ filteredCount }} محصول یافت شد</span>
+        <span>{{ productsStore.filteredProducts.length }} محصول یافت شد</span>
       </div>
     </template>
   </UCard>
 </template>
 
 <script setup>
-const props = defineProps({
-  selectedCategory: {
-    type: String,
-    required: true,
-  },
-  selectedBrands: {
-    type: Array,
-    default: () => [],
-  },
-  selectedSort: {
-    type: String,
-    required: true,
-  },
-  filteredCount: {
-    type: Number,
-    default: 0,
-  },
+import { useCategoriesStore } from '~/stores/categories.js';
+import { useBrandsStore } from '~/stores/brands.js';
+import { useProductsStore } from '~/stores/products.js';
+import { computed, onMounted } from 'vue';
+
+const productsStore = useProductsStore();
+const categoriesStore = useCategoriesStore();
+const brandsStore = useBrandsStore();
+
+onMounted(() => {
+  categoriesStore.fetchCategories();
+  brandsStore.fetchBrands();
 });
 
-const emit = defineEmits(["update:category", "update:brands", "update:sort"]);
+const categoryDropdownItems = computed(() =>
+  categoriesStore.categories.map(c => ({
+    label: c.label || c.name,
+    value: c.value || c.slug,
+    description: c.description
+  }))
+);
 
-const localCategory = ref(props.selectedCategory);
-const localBrands = ref([...props.selectedBrands]);
-const localSort = ref(props.selectedSort);
+const brandItems = computed(() =>
+  brandsStore.brands.map(b => ({ label: b.name, value: b.slug, description: b.name }))
+);
 
-const categoryItems = [
-  { label: "همه محصولات", value: "all", description: "نمایش تمام عطرها" },
-  { label: "مردانه", value: "male", description: "عطرهای مخصوص آقایان" },
-  { label: "زنانه", value: "female", description: "عطرهای مخصوص بانوان" },
-  { label: "یونیسکس", value: "unisex", description: "مناسب برای همه" },
-];
+const localCategory = computed({
+  get: () => productsStore.selectedCategory,
+  set: (value) => productsStore.setSelectedCategory(value)
+});
 
-const brandItems = [
-  { label: "دیور", value: "dior", description: "Dior" },
-  { label: "شنل", value: "chanel", description: "Chanel" },
-  { label: "لانکوم", value: "lancome", description: "Lancôme" },
-  { label: "ورساچه", value: "versace", description: "Versace" },
-  { label: "ایو سن لورن", value: "ysl", description: "YSL" },
-  { label: "کرید", value: "creed", description: "Creed" },
-  { label: "بربری", value: "burberry", description: "Burberry" },
-  { label: "تام فورد", value: "tomford", description: "Tom Ford" },
-];
+const localBrands = computed({
+  get: () => productsStore.selectedBrands,
+  set: (value) => productsStore.setSelectedBrands(value)
+});
+
+const localSort = computed({
+  get: () => productsStore.selectedSort,
+  set: (value) => productsStore.setSelectedSort(value)
+});
 
 const sortItems = [
   { label: "بدون مرتب‌سازی", value: "none", icon: "i-lucide-minus" },
@@ -146,50 +147,24 @@ const sortItems = [
 
 const hasActiveFilters = computed(
   () =>
-    localCategory.value !== "all" ||
-    localBrands.value.length > 0 ||
-    localSort.value !== "none"
+    productsStore.selectedCategory !== "all" ||
+    productsStore.selectedBrands.length > 0 ||
+    productsStore.selectedSort !== "none"
 );
 
 function handleBrandToggle(brandValue, isChecked) {
+  let updatedBrands = [...productsStore.selectedBrands];
   if (isChecked) {
-    localBrands.value.push(brandValue);
+    updatedBrands.push(brandValue);
   } else {
-    localBrands.value = localBrands.value.filter((b) => b !== brandValue);
+    updatedBrands = updatedBrands.filter((b) => b !== brandValue);
   }
-  emit("update:brands", localBrands.value);
+  productsStore.setSelectedBrands(updatedBrands);
 }
 
 function resetFilters() {
-  localCategory.value = "all";
-  localBrands.value = [];
-  localSort.value = "none";
-
-  emit("update:category", "all");
-  emit("update:brands", []);
-  emit("update:sort", "none");
+  productsStore.setSelectedCategory("all");
+  productsStore.setSelectedBrands([]);
+  productsStore.setSelectedSort("none");
 }
-
-// Sync props with local state
-watch(
-  () => props.selectedCategory,
-  (val) => {
-    localCategory.value = val;
-  }
-);
-
-watch(
-  () => props.selectedBrands,
-  (val) => {
-    localBrands.value = [...val];
-  },
-  { deep: true }
-);
-
-watch(
-  () => props.selectedSort,
-  (val) => {
-    localSort.value = val;
-  }
-);
 </script>

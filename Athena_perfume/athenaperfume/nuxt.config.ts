@@ -4,7 +4,7 @@ import tailwindcss from "@tailwindcss/vite";
 export default defineNuxtConfig({
   compatibilityDate: "2025-07-15",
   devtools: { enabled: true },
-  modules: ["@nuxt/ui", "@pinia/nuxt", "pinia-plugin-persistedstate/nuxt"],
+  modules: ["@nuxt/ui", "@pinia/nuxt"],
   colorMode: {
     preference: "light", // default value of $colorMode.preference
   },
@@ -17,4 +17,14 @@ export default defineNuxtConfig({
       proxy: "http://127.0.0.1:8000/api/**",
     },
   },
+
+  pinia: {
+    storesDirs: ['./stores/**'],
+  },
+
+  // Explicitly define plugins
+  plugins: [
+    '~/plugins/pinia-persistence.client.js',
+    '~/plugins/auth.client.js'
+  ],
 });

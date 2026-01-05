@@ -1,4 +1,3 @@
-# orders/views.py
 from rest_framework import generics, permissions, status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -6,7 +5,16 @@ from django.db import transaction
 from .models import Order, OrderItem
 from .serializers import OrderSerializer
 
+class UserOrderHistoryView(generics.ListAPIView):
+    """
+    لیست سفارشات فقط برای کاربر لاگین‌شده
+    """
+    serializer_class = OrderSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
+    def get_queryset(self):
+        # فقط سفارشات کاربر فعلی
+        return Order.objects.filter(user=self.request.user).order_by('-created_at').prefetch_related('items')
 class OrderListCreateView(generics.ListCreateAPIView):
     serializer_class = OrderSerializer
     permission_classes = [permissions.IsAuthenticated]

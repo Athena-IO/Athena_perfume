@@ -17,4 +17,4 @@ def calculate_price(product, quantity: int) -> int:
     # اگر هیچ قانونی نبود → قیمت پایه از volume_options
     if product.volume_options:
         return int(product.volume_options[0].get('price', 0))
-    return 0
+    return 0 

@@ -16,30 +16,25 @@ class UserOrderHistoryView(generics.ListAPIView):
         # فقط سفارشات کاربر فعلی
         return Order.objects.filter(user=self.request.user).order_by('-created_at').prefetch_related('items')
 class OrderListCreateView(generics.ListCreateAPIView):
+    queryset = Order.objects.all().prefetch_related('items')
     serializer_class = OrderSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
+    permission_classes = [permissions.IsAdminUser]  
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).prefetch_related('items')
+        return Order.objects.all().order_by('-created_at').prefetch_related('items')
 
 
 @api_view(['POST'])
 @permission_classes([permissions.IsAuthenticated])
-@transaction.atomic  # اگه خطا داد، همه چیز rollback بشه
+@transaction.atomic
 def create_order_from_cart(request):
     cart_items = request.data.get('cart')
 
-    # چک کردن وجود سبد
     if not cart_items or not isinstance(cart_items, list) or len(cart_items) == 0:
-        return Response(
-            {"detail": "سبد خرید خالی است یا فرمت اشتباه است."},
-            status=status.HTTP_400_BAD_REQUEST
-        )
+        return Response({"detail": "سبد خرید خالی است یا فرمت اشتباه است."}, status=status.HTTP_400_BAD_REQUEST)
 
     total_amount = 0
     order_items_data = []
 
-    # اعتبارسنجی و محاسبه قیمت کل
     for item in cart_items:
         try:
             price = float(item['price'])
@@ -47,18 +42,14 @@ def create_order_from_cart(request):
             if qty <= 0:
                 return Response({"detail": f"تعداد نامعتبر برای {item.get('name', 'محصول')}"})
         except (KeyError, TypeError, ValueError):
-            return Response(
-                {"detail": "داده‌های سبد خرید نامعتبر است."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"detail": "داده‌های سبد خرید نامعتبر است."}, status=status.HTTP_400_BAD_REQUEST)
 
         total_amount += price * qty
 
         order_items_data.append({
-            'product_slug': item.get('slug', ''),
             'product_name': item.get('name', 'نامشخص'),
             'product_image': item.get('image', ''),
-            'volume_label': item.get('volumeLabel', 'نامشخص'),
+            'volume_label': item.get('volumeLabel', 'استاندارد'),
             'price': price,
             'quantity': qty,
         })
@@ -66,15 +57,12 @@ def create_order_from_cart(request):
     # ساخت سفارش
     order = Order.objects.create(
         user=request.user,
-        total_amount=int(total_amount),  # ذخیره به صورت عدد صحیح (تومان)
+        total_amount=int(total_amount),
         status='pending'
     )
 
-    # ساخت آیتم‌های سفارش
-    order_items = [
-        OrderItem(order=order, **data)
-        for data in order_items_data
-    ]
+    # ساخت آیتم‌ها
+    order_items = [OrderItem(order=order, **data) for data in order_items_data]
     OrderItem.objects.bulk_create(order_items)
 
     return Response({

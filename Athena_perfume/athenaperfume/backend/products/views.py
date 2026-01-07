@@ -1,30 +1,45 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions , filters
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-
+from django.db.models import Q
 from .models import Product, Brand 
 from .serializers import ProductSerializer, BrandSerializer
 from .utils import calculate_price
 
-
-class ProductListCreateView(generics.ListCreateAPIView):
-    queryset = Product.objects.filter(is_active=True)
+class ProductListView(generics.ListAPIView):
     serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAdminUser]  # فقط ادمین بتونه اضافه کنه
+    permission_classes = [permissions.AllowAny]  
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['name', 'brand__name']  # جستجو در نام محصول و نام برند
+
+    def get_queryset(self):
+        queryset = Product.objects.filter(is_active=True).select_related('brand')
+        
+        # جستجوی پیشرفته (partial match)
+        search_query = self.request.query_params.get('search', None)
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(brand__name__icontains=search_query)
+            )
+        
+        return queryset.order_by('-created_at')
+
+class ProductAdminView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [permissions.IsAdminUser]
+
+    def get_queryset(self):
+        # ادمین همه رو ببینه (حتی غیرفعال)
+        return Product.objects.all().select_related('brand')
 
     def perform_create(self, serializer):
-        # slug خودکار اگر خالی بود
-        if not serializer.validated_data.get('slug'):
-            name = serializer.validated_data['name']
-            slug = slugify(name, allow_unicode=True)
-            i = 1
-            while Product.objects.filter(slug=slug).exists():
-                slug = f"{slugify(name, allow_unicode=True)}-{i}"
-                i += 1
-            serializer.save(slug=slug)
-        else:
-            serializer.save()
+        # slug خودکار
+        serializer.save()
+
+
 
 
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):

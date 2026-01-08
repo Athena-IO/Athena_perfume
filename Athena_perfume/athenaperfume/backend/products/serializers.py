@@ -189,7 +189,7 @@ class ProductSerializer(serializers.ModelSerializer):
         """برگرداندن image_url با نام image برای سازگاری با فرانت"""
         return self.get_image_url(obj)
 
- def validate_discount_percent(self, value):
+    def validate_discount_percent(self, value):
         if value < 0 or value > 100:
             raise serializers.ValidationError("درصد تخفیف باید بین ۰ تا ۱۰۰ باشد.")
         return value

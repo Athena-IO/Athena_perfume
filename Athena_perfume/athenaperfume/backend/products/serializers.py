@@ -64,6 +64,11 @@ class ProductSerializer(serializers.ModelSerializer):
     # Category and brand as slugs for filtering
     category = serializers.SerializerMethodField()
     brand = serializers.SerializerMethodField()
+    
+    # CamelCase aliases for frontend compatibility
+    originalPrice = serializers.SerializerMethodField()
+    discountPercent = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -74,7 +79,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'gender', 'description', 
             'image', 'image_url', 'additional_images', 'additional_images_urls',
             'volume_options', 'tags', 'is_active',
-            'original_price', 'discount_percent', 'price',
+            'original_price', 'originalPrice', 'discount_percent', 'discountPercent', 'price',
             'badge', 'badge_text', 'badge_color',
             'similar_perfume', 'perfume_type', 'seasons',
             'volume', 'capacity', 'sold',
@@ -82,8 +87,8 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'slug', 'brand_name', 'brand_slug', 'category_name', 'category_slug',
-            'image_url', 'additional_images_urls', 'price', 'badge', 'information',
-            'rating', 'reviews', 'category', 'brand'
+            'image', 'image_url', 'additional_images_urls', 'price', 'badge', 'information',
+            'rating', 'reviews', 'category', 'brand', 'originalPrice', 'discountPercent'
         ]
 
     def get_image_url(self, obj):
@@ -172,7 +177,19 @@ class ProductSerializer(serializers.ModelSerializer):
         """برگرداندن slug برند برای فیلتر"""
         return obj.brand.slug if obj.brand else None
 
-    def validate_discount_percent(self, value):
+    def get_originalPrice(self, obj):
+        """برگرداندن original_price با نام camelCase"""
+        return float(obj.original_price) if obj.original_price else 0
+
+    def get_discountPercent(self, obj):
+        """برگرداندن discount_percent با نام camelCase"""
+        return obj.discount_percent or 0
+
+    def get_image(self, obj):
+        """برگرداندن image_url با نام image برای سازگاری با فرانت"""
+        return self.get_image_url(obj)
+
+ def validate_discount_percent(self, value):
         if value < 0 or value > 100:
             raise serializers.ValidationError("درصد تخفیف باید بین ۰ تا ۱۰۰ باشد.")
         return value

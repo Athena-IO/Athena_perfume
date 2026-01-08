@@ -45,7 +45,7 @@ class ProductSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     
     # Image URLs
-    image_url = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()  # Returns full URL for frontend
     additional_images_urls = serializers.SerializerMethodField()
     
     # Price calculation
@@ -68,7 +68,6 @@ class ProductSerializer(serializers.ModelSerializer):
     # CamelCase aliases for frontend compatibility
     originalPrice = serializers.SerializerMethodField()
     discountPercent = serializers.SerializerMethodField()
-    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
@@ -77,7 +76,7 @@ class ProductSerializer(serializers.ModelSerializer):
             'brand', 'brand_name', 'brand_slug',
             'category', 'category_name', 'category_slug',
             'gender', 'description', 
-            'image', 'image_url', 'additional_images', 'additional_images_urls',
+            'image', 'additional_images', 'additional_images_urls',
             'volume_options', 'tags', 'is_active',
             'original_price', 'originalPrice', 'discount_percent', 'discountPercent', 'price',
             'badge', 'badge_text', 'badge_color',
@@ -87,11 +86,12 @@ class ProductSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = [
             'slug', 'brand_name', 'brand_slug', 'category_name', 'category_slug',
-            'image', 'image_url', 'additional_images_urls', 'price', 'badge', 'information',
+            'image', 'additional_images_urls', 'price', 'badge', 'information',
             'rating', 'reviews', 'category', 'brand', 'originalPrice', 'discountPercent'
         ]
 
-    def get_image_url(self, obj):
+    def get_image(self, obj):
+        """برگرداندن URL کامل تصویر برای فرانت"""
         if obj.image:
             request = self.context.get('request')
             if request:
@@ -184,10 +184,6 @@ class ProductSerializer(serializers.ModelSerializer):
     def get_discountPercent(self, obj):
         """برگرداندن discount_percent با نام camelCase"""
         return obj.discount_percent or 0
-
-    def get_image(self, obj):
-        """برگرداندن image_url با نام image برای سازگاری با فرانت"""
-        return self.get_image_url(obj)
 
     def validate_discount_percent(self, value):
         if value < 0 or value > 100:

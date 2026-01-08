@@ -4,10 +4,19 @@ from .models import Banner
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    list_display = ['name', 'image_preview', 'link', 'is_active', 'order']
-    list_editable = ['order', 'is_active']
-    list_filter = ['is_active']
-    search_fields = ['name']
+    list_display = ['name', 'image_preview', 'link', 'external', 'is_active', 'order']
+    list_editable = ['order', 'is_active', 'external']
+    list_filter = ['is_active', 'external']
+    search_fields = ['name', 'alt', 'hover_text']
+    
+    fieldsets = (
+        ('اطلاعات اصلی', {
+            'fields': ('name', 'image', 'image_preview', 'alt', 'link', 'external')
+        }),
+        ('تنظیمات نمایش', {
+            'fields': ('hover_text', 'order', 'is_active')
+        }),
+    )
 
     readonly_fields = ['image_preview']
 

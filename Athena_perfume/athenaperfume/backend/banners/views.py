@@ -6,7 +6,11 @@ from .serializers import BannerSerializer
 class BannerListCreateView(generics.ListCreateAPIView):
     queryset = Banner.objects.filter(is_active=True)
     serializer_class = BannerSerializer
-    permission_classes = [permissions.IsAdminUser]
+    
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]
 
     def perform_create(self, serializer):
         if Banner.objects.count() >= 4:
